@@ -1,0 +1,107 @@
+#! /usr/bin/env python
+
+"""\
+Initialise a topfitter dataset directory.
+"""
+import os, shutil, glob
+from sys import exit
+
+import optparse
+op = optparse.OptionParser()
+op.add_option("--proc", dest="PROCESS", default="ttbar", help="Process to generate")
+op.add_option("--coll", dest="COLLIDER", default="LHC7", help="Collider settings to use. For advanced options edit the card yourself")
+op.add_option("--mod", dest="MODEL", default="warsaw_d6", help="New physics model to test")
+op.add_option("--dat", dest="DATASET", default="1407.0371", help="arXiv code of dataset to fit to")
+op.add_option("--list", dest="LIST", default=False, action="store_true", help="List available measurements to fit to and quit")
+op.add_option("--xsec", dest="XSEC", default=False, action="store_true", help="Cross-sections only, no MadAnalysis")
+
+opts, args = op.parse_args()
+
+database="datasets"
+path, datasets, files = os.walk(database).next()
+   
+if (not args and opts.LIST):
+    print "Possible measurements to fit to:\n"
+    for d in datasets:
+        with open(os.path.join(database,d,"TAG"),'r') as tag:
+            tag=tag.read()
+        print '%s: %s' % (d, tag)
+    exit(0)    
+elif (not args and not opts.LIST):
+    print "Don't forget a name for the initialised directory"
+    exit(1)
+elif len(args)>1:
+    print "Too many arguments. Exiting"
+    exit(1)    
+
+## initialise output directory    
+OUTDIR=args[0]
+shutil.rmtree(OUTDIR,ignore_errors=True)
+os.mkdir(OUTDIR)
+
+## index process/collider options
+processes, colliders, models = [], [], []
+processes=os.walk("processes").next()[2]
+colliders=os.walk("colliders").next()[2]
+models=os.walk("models").next()[2]
+
+processes = [f.split(".")[0] for f in processes]
+
+## check if options available    
+if not opts.PROCESS in processes:
+    print "Not in available processes"
+    exit(1)
+if not opts.COLLIDER in colliders:
+    print "These collider settings aren't available"
+    exit(1)
+if not opts.DATASET in datasets:
+    print "Measurement not available"
+    exit(1)
+if not opts.MODEL in models:
+    print "This model not yet available"
+    exit(1)    
+
+## process to fit
+proc = opts.PROCESS
+procz = proc+".tgz"
+
+## copy MadGraph directory
+samples=os.path.join(OUTDIR,"samples")
+import tarfile
+tar = tarfile.open(os.path.join("processes",procz))
+tar.extractall()
+shutil.move(proc,samples)
+
+## collider type
+runcard=os.path.join(OUTDIR,"samples","Cards","run_card.dat")
+colcard=os.path.join("colliders",opts.COLLIDER)
+shutil.copy(colcard,runcard)
+
+## parameter card from UFO+MG
+modcard=os.path.join("models",opts.MODEL)
+shutil.copy(modcard,os.path.join(OUTDIR,"param_card_sm.dat"))
+
+## data to fit to
+dataset=opts.DATASET
+shutil.copytree(os.path.join(database,dataset,"bins"),os.path.join(OUTDIR,"data"))
+if os.path.isdir(os.path.join(database,dataset,"corrs")):
+    shutil.copytree(os.path.join(database,dataset,"corrs"),os.path.join(OUTDIR,"correlations"))
+
+## remaining scripts needed: pythonise them all!    
+scripts = ['run_scan.py','extract_dats.sh','rebin.cc','generate_space.py','nlo_reweight.py','make_plots.sh','rebin_all.sh']
+for s in scripts:
+    shutil.copy(os.path.join("scripts",s),OUTDIR)
+
+
+## kfactors
+kfacdir=os.path.join(OUTDIR,"kfactors")
+os.mkdir(kfacdir)
+kfacfiles=glob.glob( os.path.join("kfactors",opts.COLLIDER,"*.dat"))
+for f in kfacfiles:
+    shutil.copy(f,kfacdir)
+
+## MadAnalysis
+MA="MadAnalysis"
+if not opts.XSEC:
+    shutil.copytree(MA,os.path.join(samples,MA))
+    

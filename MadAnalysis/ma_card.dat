@@ -1,0 +1,74 @@
+#**************************************************************************
+#                      Card for MadAnalysis                               *
+#                  (see README for futher options)                        *
+#**************************************************************************
+# Put here your list of classes
+#**************************************************************************
+# Do NOT put spaces before class names!
+# Begin Classes # This is TAG. Do not modify this line
+jet  1 -1 2 -2 3 -3 4 -4 21   # Class number 1
+b    5 -5                     # Class number 2
+t1    6  
+t2   -6
+mET  12 -12 14 -14 16 -16 1000022    # Missing ET class, name is reserved
+# End Classes # This is TAG. Do not modify this line
+#**************************************************************************
+ordering_function pt  # orders particles in classes according to their pt
+normalization xsec    # histogram normalization, xsec or number (e.g. 1)
+#**************************************************************************
+# Put here list of minimum pt for the classes
+#**************************************************************************
+# Begin Minpts # This is TAG. Do not modify this line
+# End Minpts # This is TAG. Do not modify this line
+#**************************************************************************
+# Cuts on plotted events
+#**************************************************************************
+# Modify the cuts and remove the pounds/hashes to apply those cuts
+# Do NOT put spaces at the beginning of the following lines!
+# Begin Cuts # This is TAG. Do not modify this line
+#XYZA2max  2 2 2 2 4 1 5 1 40d0
+# End Cuts # This is TAG. Do not modify this line
+#**************************************************************************
+# Put here the required plots
+#**************************************************************************
+# Do NOT put spaces at the beginning of the following lines!
+# Begin PlotDefs # This is TAG. Do not modify this line 
+# X1 = |y| XY1 = |y_ttb|
+pt   3 1
+pt   4 1
+mij  3 1
+mij  4 1
+y    3 1
+y     4 1
+delta_y 3 1
+delta_y 4 1
+XY1 	3 1
+XY1 	4 1
+X1	3 1
+X1	4 1
+# End PlotDefs # This is TAG. Do not modify this line
+#**************************************************************************
+#**************************************************************************
+# Put here the plot ranges
+#**************************************************************************
+# Do NOT put spaces at the beginning of the following lines!
+# Begin PlotRange # This is TAG. Do not modify this line
+pt        10    0  1800  # bin size, min value, max value
+y         0.2 -2.5  2.5 
+mij       5   0  2000
+delta_y   0.05 -2.5  2.5
+XY1	  0.05  0   2.5
+X1	  0.05  0   2.5
+# End PlotRange # This is TAG. Do not modify this line
+#**************************************************************************
+#**************************************************************************
+# Output for plots
+#**************************************************************************
+# Do NOT put spaces at the beginning of the following lines!
+# Begin PlotOutput # This is TAG. Do not modify this line
+output        topdrawer  # set to topdrawer or gnuplot
+plot_decayed  no         # plot (and cut) dec. res.? (Only for LHE events)
+# End PlotOutput # This is TAG. Do not modify this line
+#**************************************************************************
+#
+#

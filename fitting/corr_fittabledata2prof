@@ -1,0 +1,121 @@
+#! /usr/bin/env python2.7
+
+"""\
+Usage: %prog procdir1 [procdir2 ...]
+"""
+
+def main():
+
+    import optparse
+    op = optparse.OptionParser(usage=__doc__)
+    op.add_option("-o", "--out", dest="OUTDIR", default="fit")
+    opts, args = op.parse_args()
+
+    ## Make output dirs
+    import os, shutil, glob
+    refdir = os.path.join(opts.OUTDIR, "ref")
+    if not os.path.isdir(refdir):
+        os.makedirs(refdir)
+    mcdir = os.path.join(opts.OUTDIR, "mc")
+    if not os.path.isdir(mcdir):
+        os.makedirs(mcdir)
+    corrdir = os.path.join(opts.OUTDIR, "corr")
+    if not os.path.isdir(corrdir):
+        os.makedirs(corrdir)    
+
+    ## Convert histos in each process group
+    for procdir in args:
+        import yoda
+
+        if not os.path.isdir(procdir):
+            print procdir, "is not a directory"
+            exit(1)
+
+        # Sanitise proc path by removing initial slashes, ./, etc.
+        proc = procdir.strip("/").upper()
+
+        ## Convert ref data into new dir
+        infiles_ref = glob.glob( os.path.join(procdir, "data", "*.dat") )
+        aos = []
+        for f in infiles_ref:
+            s = dat2yoda(f, "/REF/"+proc)
+            aos.append(s)
+        reffile = os.path.join(refdir, proc.replace("/", "_")+".yoda")
+        #print "Writing ref data into", reffile
+        yoda.write(aos, reffile)
+
+        ## Include bin to bin covariance matrices on data
+        infiles_corr = glob.glob( os.path.join(procdir, "correlations", "*.dat") )
+        for f in infiles_corr:
+            k = proc.replace("/","_").upper()+"_"+f.split("/")[-1]            
+            shutil.copy(f,os.path.join(corrdir,k))
+
+        ## Convert sampled data into new dirs
+        rundirs = sorted([x[0] for x in os.walk(os.path.join(procdir, "results_rebinned"))][1:])
+        for rd in rundirs:
+            run = os.path.basename(rd)
+            infiles = glob.glob( os.path.join(rd, "*.dat") )
+
+            aos = []
+            for f in infiles:
+                s = dat2yoda(f, "/"+proc)
+                aos.append(s)
+            mcrundir = os.path.join(mcdir, run)
+            if not os.path.isdir(mcrundir):
+                os.makedirs(mcrundir)
+            mcfile = os.path.join(mcrundir, proc.replace("/", "_")+".yoda")
+            #print "Writing MC data into", mcfile
+            yoda.write(aos, mcfile)
+
+            ## Copy used_params to output
+            upfile_src = os.path.join(rd, "used_params")
+            upfile_dst = os.path.join(mcrundir, "used_params")
+            import filecmp
+            if not os.path.exists(upfile_dst):
+                shutil.copy(upfile_src, upfile_dst)
+            elif not filecmp.cmp(upfile_src, upfile_dst):
+                print upfile_src, "differs from already existing", upfile_dst
+                exit(2)
+
+        #print "Writing {} histos to {}".format(len(aos), outfile)
+
+
+
+def dat2yoda(infile, prefix="/TOPFITTER"):
+    import yoda, math, os
+    hname = os.path.basename(infile).replace(".dat", "")
+
+    s = None
+    with open(infile) as f:
+        s = yoda.Scatter2D(os.path.join(prefix, hname))
+        valslist = [[float(x) for x in line.split()] for line in f.readlines()]
+        for n, vals in enumerate(valslist):
+            if len(vals) == 0:
+                continue
+            yerr = None
+            if len(vals) == 2: # no x value
+                yerr = vals[1] if vals[1] else 0.0 #opts.ERR * vals[0] if opts.ERR else 0.0
+                s.addPoint(0, vals[0], 0, yerr)
+            else: # if len(vals) >= 3:
+                ## Work out bin edges (MadAnalysis... sigh)
+                x = vals[0]
+                xerrm = ( x - valslist[n-1][0])/2 if n-1 >= 0 else 0
+                xerrp = (-x + valslist[n+1][0])/2 if n+1 < len(valslist) else 0
+                # if xerrm is None and xerrp is not None:
+                #     xerrm = xerrp
+                # if xerrp is None and xerrm is not None:
+                #     xerrp = xerrm
+                ##
+                if not xerrm and not xerrp:
+                    xerrm = xerrp = 0.5
+                #
+                y = vals[1]
+                #yerr2 = sum((v if v else opts.ERR * y if opts.ERR else 0.0) for v in vals[2:])
+                yerr2 = sum(v**2 for v in vals[2:])
+                yerr = math.sqrt(yerr2)
+                s.addPoint(x, y, (xerrm, xerrp), yerr)
+    return s #if s.numPoints else None
+
+
+if __name__ == "__main__":
+    main()

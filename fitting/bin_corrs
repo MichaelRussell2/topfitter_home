@@ -1,0 +1,114 @@
+#! /usr/bin/env python2.7
+
+"""\
+%prog <datadir>
+
+Quantify the contribution to the chi2 at a given point from correlated bins
+"""
+
+import optparse
+op = optparse.OptionParser()
+
+op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file from which to read the bin interpolations (default: %default)")
+
+opts, args = op.parse_args()
+DATADIR = args[0]
+
+import professor2 as prof
+import numpy as np
+import math
+
+## Load interpolated histograms from file
+IMETA = prof.read_meta(opts.IFILE)
+IHISTOS = prof.read_binnedipol(opts.IFILE)
+HNAMES = IHISTOS.keys()
+
+## Extract parameter info from ipol file
+PARAMNAMES = IMETA["ParamNames"].split()
+NOPS = len(PARAMNAMES)
+
+## Read reference data histos
+import os, glob
+DHISTOS = {}
+reffiles = glob.glob(os.path.join(DATADIR, "ref", "*"))
+for rf in reffiles:
+    DHISTOS.update(prof.read_histos(rf))
+## Remove /REF prefixes
+DHISTOS = { p.replace("/REF", "") : h for (p, h) in DHISTOS.iteritems() }
+
+
+## Exclude unwanted data
+for i, hn in enumerate(HNAMES):
+    keep = True
+    # if "ATLAS_TCHAN_7TEV_TOP/pt" in hn or "ATLAS_TCHAN_7TEV_ANTITOP/pt" in hn:
+    #     IHISTOS[hn].bins = IHISTOS[hn].bins[:-2]
+    #     DHISTOS[hn].bins = DHISTOS[hn].bins[:-2]
+    if not keep:
+        print "Skipping", hn
+        del HNAMES[i]
+        
+def chi2_hist(ihist, dhist, params):
+    assert len(ihist.bins) == len(dhist.bins)
+    chi2_diag, ndf_diag, chi2_offdiag, ndf_offdiag = 0.0, 0, 0.0, 0,
+    covmatfile = DATADIR+ "/corr/" + dhist.path.replace("/", "_").replace("REF","").strip("_") + ".dat"
+    if os.path.exists(covmatfile): 
+        covmat = np.loadtxt(covmatfile) 
+    else:
+        covmat = np.identity(len(ihist.bins))
+    for nb1, (ib1, db1) in enumerate(zip(ihist.bins, dhist.bins)):
+        for nb2, (ib2, db2) in enumerate(zip(ihist.bins, dhist.bins)):
+            if (nb1 < nb2 ):
+                cov12 = covmat[nb1,nb2]
+                ival1, ival2 = ib1.val(params), ib2.val(params)
+                dy1, dy2  = ival1 - db1.val, ival2 - db2.val
+                ierr1, ierr2 = ib1.err(params), ib2.err(params)
+                ipolerr1, ipolerr2 = 0.03*ival1, 0.03*ival2
+                derr1, derr2 = db1.err, db2.err
+                ey12, ey22 = derr1**2 + ierr1**2 + ipolerr1**2,  derr2**2 + ierr2**2 + ipolerr2**2
+                ey2 = math.sqrt(ey12*ey22)
+                if (dy1 and not ey2):# or (dy2 and not ey2):
+                    print "WARNING: Zero error for non-zero bin in chi2 calculation for %s:%d. Skipping..." % (ihist, nb)
+                    continue
+                if (ey2):
+                    chi2_b = dy1*cov12*dy2/ey2
+                    chi2_offdiag += chi2_b
+                    ndf_offdiag += 1
+            elif (nb1 == nb2):
+                dy  = ib1.val(params) - db1.val
+                ierr = ib1.err(params)
+                ipolerr = 0
+                derr = db1.err
+                ey2 = derr**2 + ierr**2 + ipolerr**2
+                if (ey2):
+                    chi2_b = dy**2/ey2
+                    chi2_diag += chi2_b
+                    ndf_diag +=1
+                else:
+                    print "Zero-error in this bin, skipping" 
+            else:
+                # print "This pair of bins has already been counted once!"
+                continue
+    return chi2_offdiag, ndf_offdiag, chi2_diag, ndf_diag
+
+## Chi-square at a fixed position
+PARAMPT = [0 for _ in xrange(NOPS)] # SM
+
+from matplotlib import pyplot as pl
+chi2_total, ndf_total = 0.0, 0
+for h in sorted(HNAMES):
+    print
+    print h
+    dhist = DHISTOS[h]
+    ihist = IHISTOS[h]
+    chi2_h_offdiag, ndf_h_offdiag, chi2_h_diag, ndf_h_diag = chi2_hist(ihist, dhist, PARAMPT)
+    print "chi2 due to diagonal elements = ", chi2_h_diag
+    print "chi2 due to off-diagonal elements = ", chi2_h_offdiag
+    print
+    if(ndf_h_offdiag):
+        print "chi2/ndf due to diagonal elements = ", chi2_h_diag/ndf_h_diag
+        print "chi2/ndf due to off-diagonal elements = ", chi2_h_offdiag/ndf_h_offdiag
+    else:
+        print "chi2/ndf due to diagonal elements = ", chi2_h_offdiag/ndf_h_diag
+        print "chi2/ndf due to off-diagonal elements = ", 0
+
+        

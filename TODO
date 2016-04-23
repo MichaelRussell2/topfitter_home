@@ -1,0 +1,15 @@
+TODO:
+
+-> Pythonise rebin
+-> run_scan: parallel or series options, diff or tot
+-> Move kfactors to each process
+-> More processes, more measurements
+   ttbar, ttz, tj, tb, ttH ttgamma, ttW?, ttj?
+   decayed samples and widths
+   vh, qqh, ggh?
+-> what about ac, afb, weird ones
+-> Get HepData script??
+-> Pseudodata directory?
+
+To add: all totals, helicity fractions, widths
+     	 		 

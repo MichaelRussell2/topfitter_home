@@ -1,0 +1,17 @@
+Performace comparison of bash vs python versions of various topfitter scripts:
+
+Script:	   Benchmark: 	      	 Result:
+
+run_scan   ttbar undecayed	 Bash: 175 minutes
+	   100 runs 		 Python: 173 minutes
+	   100k events/run	 meh, can only go as fast as madgraph allows
+
+nlo_rw	   ttbar undecayed 	 Bash: 16.4 s
+	   1000 runs		 Python: 3.7 s
+	   plots pt, mtt, ytt 	 (all hail numpy)
+
+rebin	   ??
+
+extract_dats vs make_plots?
+MadAnalysis vs fastpartons??
+

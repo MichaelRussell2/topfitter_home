@@ -1,0 +1,35 @@
+#! /usr/bin/env python
+
+"""\
+Add a measurement to the database
+"""
+import random, os, math, shutil, glob
+
+from sys import exit
+
+import optparse
+op = optparse.OptionParser()
+op.add_option("--corr", dest="CORR", default=False, action="store_true", help="Correlation matrices included in this dataset")
+op.add_option("--tag", dest="TAG", default="", help="Description tag for the dataset")
+
+opts, args = op.parse_args()
+
+if len(args)!= 1:
+    print "Wrong no. of arguments. Exiting"
+    exit(1)
+
+dirname=args[0]
+    
+if os.path.exists(dirname):
+    print "Dataset already included. Exiting"
+    exit(1)
+
+os.mkdir(dirname)
+os.mkdir(os.path.join(dirname,"bins"))
+if opts.CORR:
+    os.mkdir(os.path.join(dirname,"corrs"))        
+
+tfile=os.path.join(dirname,"TAG")    
+with open(tfile,'w') as f:
+    f.write("%s \n" % opts.TAG)
+    f.close()     

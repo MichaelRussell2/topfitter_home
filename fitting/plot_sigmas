@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+
+"""\
+Plot 68, 95, and 99% confidence interval contours for a pair of coefficients.
+NOTE: Coefficients are normalised to Cbar notation 
+"""
+
+import numpy as np
+import os
+
+import optparse
+op = optparse.OptionParser()
+op.add_option("--cpair", dest="CPAIR", default="1,2", help="pair of parameters to plot")
+op.add_option("--npix", dest="NPIXELS", type=int, default=201, help="number of pixels in the parameter plane (default: %default)")
+op.add_option("--range", dest="BOUNDS", default="-1000,1000",help="range of coefficient to scan over (default: %default)")
+op.add_option("--xrange", dest="XRANGE", default="-0.2,0.2",help="plot range for Cbar on x-axis (default: %default)")
+op.add_option("--yrange", dest="YRANGE", default="-0.2,0.2",help="plot range for Cbar on x-axis (default: %default)")
+op.add_option("--info", dest="INFO", default=False, action="store_true", help="output additional info on location of the minima")
+
+opts, args = op.parse_args()
+
+c1, c2 = map(int, opts.CPAIR.split(","))
+pair = "C%dC%d" % (c1, c2)
+
+low, high = map(int, opts.BOUNDS.split(","))
+xmin, xmax = map(float, opts.XRANGE.split(","))
+ymin, ymax = map(float, opts.YRANGE.split(","))
+
+N = opts.NPIXELS
+
+from scipy import stats as st
+
+ndf = 154 ##automate this somehow?
+
+sig1 = st.chi2.ppf(0.68,ndf)
+sig2 = st.chi2.ppf(0.95,ndf)
+sig3 = st.chi2.ppf(0.99,ndf)
+
+vev2 = 0.060156
+
+step = (high-low)/(N-1)
+xs = np.linspace(low,high,N)
+ys = np.linspace(low,high,N)
+
+chi2s = np.zeros([N,N])
+chi2s = np.loadtxt('data/all_xsecs/chi2s_slice_7d_%s.dat' % pair)
+
+from numpy import unravel_index
+j = tuple([low+step*k for k in unravel_index(chi2s.argmin(),chi2s.shape) ])
+ij = tuple([k for k in unravel_index(chi2s.argmin(),chi2s.shape) ])
+xmin = j[0]
+ymin = j[1]
+
+
+if (opts.INFO):
+    print
+    print 'Min. chi2 for pair C%d, C%d = %.2f at (%.f, %.f) ' % (c1, c2, np.min(chi2s), xmin, ymin)
+
+
+import pylab
+import matplotlib as mpl
+
+mpl.rcParams["text.usetex"] = True
+mpl.rcParams["font.family"] = "serif"
+mpl.rcParams.update({'font.size': 18})
+ 
+from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+fig = plt.figure(figsize=[6.2,6.2])
+ax1 = fig.add_subplot(1,1,1)
+lvls = [0,sig1,sig2,sig3]
+sigmas = "#2b00ff","#00ffff","#ff9900"
+
+p1 = ax1.contourf(vev2*xs/100, vev2*ys/100, chi2s, lvls, colors=(sigmas), interpolation="nearest") 
+
+ax1.set_xlabel("$C_{%d}v^2/\Lambda^2$" % c1 , x=1, ha="right")
+ax1.set_ylabel("$C_{%d}v^2/\Lambda^2$" % c2, y=0.95, va="top")
+
+ax1.vlines(0,-10*vev2,10*vev2,linestyles= u'dashed')
+ax1.hlines(0,-10*vev2,10*vev2,linestyles= u'dashed')
+ax1.plot(vev2*ymin/100,vev2*xmin/100,"*",color='r',markersize=18)
+
+xtks=np.arange(-1.0,1.0,0.1)
+ytks=np.arange(-1.0,1.0,0.1)
+plt.xticks(xtks)
+plt.yticks(ytks)
+
+## Wanted to set these to xmin,xmax etc, but mpl doesn't like that
+plt.xlim(-0.2,0.2)
+plt.ylim(-0.2,0.2)
+
+#fig.savefig("plots/%s.pdf" % pair)
+fig.savefig("test.pdf")
+
