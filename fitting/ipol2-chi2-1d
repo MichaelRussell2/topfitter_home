@@ -120,16 +120,30 @@ print "Making C_%d scan" % (I1+1)
 paramidstr = "C%d" % (I1+1)
 
 ## Define a chi2 function over the remaining params
-def chi2_marginalise_7(a,b,c,d,e,f):
+def chi2_marginalise_6(a,b,c,d,e):
     global NBINS
-    freeargs = [f,e,d,c,b,a]
+    freeargs = [e,d,c,b,a]
     args = []
-    for i in xrange(7):
+    for i in xrange(6):
         if i == I1:
             args.append(X)
         else:
             args.append(freeargs.pop())
-    assert len(args) == 7
+    assert len(args) == 6
+    assert len(freeargs) == 0
+    c2, NBINS = chi2_tot(IHISTOS, DHISTOS, args, HNAMES, MAXERRS)
+    return c2
+
+def chi2_marginalise_11(a,b,c,d,e,f,g,h,i):
+    global NBINS
+    freeargs = [i,h,g,f,e,d,c,b,a]
+    args = []
+    for i in xrange(11):
+        if i == I1:
+            args.append(X)
+        else:
+            args.append(freeargs.pop())
+    assert len(args) == 11
     assert len(freeargs) == 0
     c2, NBINS = chi2_tot(IHISTOS, DHISTOS, args, HNAMES, MAXERRS)
     return c2
@@ -155,7 +169,9 @@ for IX, X in enumerate(xs):
     elif NOPS == 5:
         chi2_slice = chi2_marginalise_5(0,0,0,0)
     elif NOPS == 7:
-        chi2_slice = chi2_marginalise_7(0,0,0,0,0,0)
+        chi2_slice = chi2_marginalise_6(0,0,0,0,0)
+    elif NOPS == 11:
+        chi2_slice = chi2_marginalise_11(0,0,0,0,0,0,0,0,0,0)
     chi2s_slice[IX] = chi2_slice
 
     ## Use scipy to calculate 95% conf intervals, with ndf = nbins

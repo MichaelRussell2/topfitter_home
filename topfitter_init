@@ -92,7 +92,6 @@ scripts = ['run_scan.py','extract_dats.sh','rebin.cc','generate_space.py','nlo_r
 for s in scripts:
     shutil.copy(os.path.join("scripts",s),OUTDIR)
 
-
 ## kfactors
 kfacdir=os.path.join(OUTDIR,"kfactors")
 os.mkdir(kfacdir)

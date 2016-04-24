@@ -16,7 +16,7 @@ opts, args = op.parse_args()
 
 indir="results"
 kdir="kfactors"
-outdir="results_reweighted_python"
+outdir="results_reweighted"
 shutil.rmtree(outdir,ignore_errors=True)
 os.mkdir(outdir)
 

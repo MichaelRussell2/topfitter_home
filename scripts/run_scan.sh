@@ -5,7 +5,7 @@ mkdir plots/ results/ samples/outputs/
 
 main=${PWD}
 k=0
-size=`ls -Rp param_space/ | grep "/$" | wc -l`
+size=$(ls -Rp param_space/ | grep "/$" | wc -l)
 
 while [ $k -lt $size ]
 do

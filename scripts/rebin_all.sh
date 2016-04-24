@@ -1,7 +1,7 @@
 #!/bin/bash
 
 k=0
-size=100
+size=$(ls -Rp param_space/ | grep "/$" | wc -l)
 
 rm -fr results_rebinned/
 mkdir results_rebinned/
