@@ -1,17 +1,19 @@
 #! /usr/bin/env python
 
 """\
+%prog <dirname> [opts]
+
 Initialise a topfitter dataset directory.
 """
 import os, shutil, glob
 from sys import exit
 
 import optparse
-op = optparse.OptionParser()
-op.add_option("--proc", dest="PROCESS", default="ttbar", help="Process to generate")
-op.add_option("--coll", dest="COLLIDER", default="LHC7", help="Collider settings to use. For advanced options edit the card yourself")
-op.add_option("--mod", dest="MODEL", default="warsaw_d6", help="New physics model to test")
-op.add_option("--dat", dest="DATASET", default="1407.0371", help="arXiv code of dataset to fit to")
+op = optparse.OptionParser(usage=__doc__)
+op.add_option("--proc", dest="PROCESS", default="ttbar", help="Process to generate (default=%default)")
+op.add_option("--coll", dest="COLLIDER", default="LHC7", help="Collider settings to use. For advanced options edit the card yourself (default=%default)")
+op.add_option("--mod", dest="MODEL", default="warsaw_d6", help="New physics model to test (default=%default)")
+op.add_option("--dat", dest="DATASET", default="1407.0371", help="arXiv code of dataset to fit to, see list (default=%default)")
 op.add_option("--list", dest="LIST", default=False, action="store_true", help="List available measurements to fit to and quit")
 op.add_option("--xsec", dest="XSEC", default=False, action="store_true", help="Cross-sections only, no MadAnalysis")
 
@@ -61,6 +63,28 @@ if not opts.MODEL in models:
     print "This model not yet available"
     exit(1)    
 
+## data to fit to
+dataset=opts.DATASET
+shutil.copytree(os.path.join(database,dataset,"bins"),os.path.join(OUTDIR,"data"))
+if os.path.isdir(os.path.join(database,dataset,"corrs")):
+    shutil.copytree(os.path.join(database,dataset,"corrs"),os.path.join(OUTDIR,"correlations")) 
+    
+## check if settings match chosen dataset    
+import csv
+with open(os.path.join(database,dataset,"settings"),"r") as f:
+    reader = csv.reader(f)
+    settings = [row for row in reader]
+try:
+    assert opts.COLLIDER == settings[0][1]
+except:
+    print "Wrong collider settings for this dataset"
+    exit(1)
+try:
+    assert opts.PROCESS == settings[0][2]
+except:
+    print "Wrong process chosen for this dataset"
+    exit(1)   
+    
 ## process to fit
 proc = opts.PROCESS
 procz = proc+".tgz"
@@ -80,13 +104,7 @@ shutil.copy(colcard,runcard)
 ## parameter card from UFO+MG
 modcard=os.path.join("models",opts.MODEL)
 shutil.copy(modcard,os.path.join(OUTDIR,"param_card_sm.dat"))
-
-## data to fit to
-dataset=opts.DATASET
-shutil.copytree(os.path.join(database,dataset,"bins"),os.path.join(OUTDIR,"data"))
-if os.path.isdir(os.path.join(database,dataset,"corrs")):
-    shutil.copytree(os.path.join(database,dataset,"corrs"),os.path.join(OUTDIR,"correlations"))
-
+  
 ## remaining scripts needed: pythonise them all!    
 scripts = ['run_scan.py','extract_dats.sh','rebin.cc','generate_space.py','nlo_reweight.py','make_plots.sh','rebin_all.sh']
 for s in scripts:

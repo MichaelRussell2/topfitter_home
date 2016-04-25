@@ -1,14 +1,17 @@
 #! /usr/bin/env python
 
 """\
-Add a measurement to the database
+%prog <dirname> [opts]
+
+Add a measurement to the topfitter database
+(Please use the arXiv identifier as the data directory name)
 """
 import random, os, math, shutil, glob
 
 from sys import exit
 
 import optparse
-op = optparse.OptionParser()
+op = optparse.OptionParser(usage=__doc__)
 op.add_option("--corr", dest="CORR", default=False, action="store_true", help="Correlation matrices included in this dataset")
 op.add_option("--tag", dest="TAG", default="", help="Description tag for the dataset")
 
