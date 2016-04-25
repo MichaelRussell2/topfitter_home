@@ -1,14 +1,19 @@
 #! /usr/bin/env python
+"""\
+%prog [opts]
+
+Start running MadEvent samples in series (see make_batch_grid.py for parallel options) 
+"""
 
 import os, shutil, re, fileinput
 from subprocess import call
 from sys import exit
 
 import optparse
-op = optparse.OptionParser()
+op = optparse.OptionParser(usage=__doc__)
 
 op.add_option("--xsec",dest="XSEC", default=False, action="store_true", help="Get total cross-section only, no event plotting.")
-op.add_option("--npts",dest=NSCAN, default=1000, help="number of scan points")
+op.add_option("--npts",dest="NSCAN", default=1000, help="number of scan points")
 #op.add_option("--parallel",dest=BATCH, default=False, action="store_true", help="Generate a grid of sample points to run in parallel.")
 #op.add_option("--ncoeff",dest=NCOEFF, default=6, help="Check dimensionality of parameter space is same as ")
 

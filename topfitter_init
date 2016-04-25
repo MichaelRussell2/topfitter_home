@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """\
-%prog <dirname> [opts]
+%prog <directory_name> [opts]
 
 Initialise a topfitter dataset directory.
 """
@@ -16,6 +16,7 @@ op.add_option("--mod", dest="MODEL", default="warsaw_d6", help="New physics mode
 op.add_option("--dat", dest="DATASET", default="1407.0371", help="arXiv code of dataset to fit to, see list (default=%default)")
 op.add_option("--list", dest="LIST", default=False, action="store_true", help="List available measurements to fit to and quit")
 op.add_option("--xsec", dest="XSEC", default=False, action="store_true", help="Cross-sections only, no MadAnalysis")
+op.add_option("--batch", dest="BATCH", default=False, action="store_true", help="Generate different MC runs in parallel on a batch farm")
 
 opts, args = op.parse_args()
 

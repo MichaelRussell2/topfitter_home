@@ -1,0 +1,195 @@
+#! /usr/bin/env python
+
+"""\
+%prog <datadir>
+
+Plot the ref vs. ipol observables at a given point
+"""
+import sys, os
+
+import optparse
+op = optparse.OptionParser()
+op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file from which to read the bin interpolations (default: %default)")
+op.add_option("--nscan", dest="NSCAN", type=int, default=11, help="number of preliminary scan points to give to minuit (default=%default)")
+op.add_option("--npts", dest="NPTS", type=int, default=201, help="number of points to calculate chi2 at (default=%default)")
+op.add_option("--coeff", dest="COEFF", default="0", help="parameter to marginalise/slice in (default=%default)")
+op.add_option("--range", dest="BOUNDS", default="-1000,1000",help="boundaries of the hypercube")
+
+opts, args = op.parse_args()
+DATADIR = args[0]
+
+low, high = map(int, opts.BOUNDS.split(","))
+
+import professor2 as prof
+import numpy as np
+import math
+
+## Load interpolated histograms from file
+IMETA, IHISTOS = prof.read_ipolhistos(opts.IFILE)
+HNAMES = IHISTOS.keys()
+
+## Extract parameter info from ipol file
+PARAMNAMES = IMETA["ParamNames"].split()
+NOPS = len(PARAMNAMES)
+
+## Read reference data histos
+import os, glob
+DHISTOS = {}
+reffiles = glob.glob(os.path.join(DATADIR, "ref", "*"))
+for rf in reffiles:
+    DHISTOS.update(prof.read_histos(rf))
+
+## Remove /REF prefixes
+DHISTOS = dict(( p.replace("/REF", "") ,  h) for (p, h) in DHISTOS.iteritems())
+
+## Read MC interpolation input histograms and find maximum errors in each bin
+RUNDIRS = glob.glob(os.path.join(DATADIR, "mc", "*"))
+_, MCHISTOS = prof.load_rundata(RUNDIRS, "used_params") #< TODO: relax pname to * glob
+MAXERRS = {}
+
+for hn, hs in MCHISTOS.iteritems():
+    numbins_h = DHISTOS[hn].nbins
+    maxerrs_h = []
+    for ib in xrange(numbins_h):
+        emax = max(h.bins[ib].err for h in hs.values())
+        maxerrs_h.append(emax)
+    MAXERRS[hn] = maxerrs_h
+    #print hn, maxerrs_h
+
+def chi2_hist(ihist, dhist, params, errmaxs=None):
+    assert len(ihist.bins) == len(dhist.bins)
+    chi2, ndf = 0.0, 0
+    covmatfile = DATADIR+ "/corr/" + dhist.path.replace("/", "_").replace("REF","").strip("_") + ".dat"
+    if os.path.exists(covmatfile): 
+        covmat = np.loadtxt(covmatfile) 
+    else:
+        covmat = np.identity(len(ihist.bins))
+    for nb1, (ib1, db1) in enumerate(zip(ihist.bins, dhist.bins)):
+        for nb2, (ib2, db2) in enumerate(zip(ihist.bins, dhist.bins)):
+            if (nb1 <= nb2):
+                cov12 = covmat[nb1,nb2]
+                ival1, ival2 = ib1.val(params), ib2.val(params)
+                dy1, dy2  = ival1 - db1.val, ival2 - db2.val
+                ierr1, ierr2 = ib1.err(params), ib2.err(params)
+                ipolerr1, ipolerr2 = 0.05*ival1, 0.05*ival2
+                derr1, derr2 = db1.err, db2.err
+                ey12, ey22 = derr1**2 + ierr1**2 + ipolerr1**2,  derr2**2 + ierr2**2 + ipolerr2**2
+                ey2 = math.sqrt(ey12*ey22)
+                if (dy1 and not ey2):# or (dy2 and not ey2):
+                    print "WARNING: Zero error for non-zero bin in chi2 calculation for %s:%d. Skipping..." % (ihist, nb)
+                    continue
+                if (ey2):
+                    chi2_b = dy1*cov12*dy2/ey2
+                    chi2 += chi2_b
+            else:
+                #print "Already counted this pair of bins once"
+                continue
+        ndf += 1
+    return chi2, ndf
+
+def chi2_tot(params):
+    chi2_tot, ndf_tot = 0, 0
+    for hn in HNAMES:
+        chi2_h, ndf_h = chi2_hist(IHISTOS[hn], DHISTOS[hn], params)
+        chi2_tot += chi2_h
+        ndf_tot += ndf_h
+    return chi2_tot, ndf_tot
+
+RANGES = [(low,high) for i in xrange(NOPS)]
+N = opts.NPTS
+
+I1= int(float(opts.COEFF))
+print "Making C_%d scan" % (I1+1)
+paramidstr = "C%d" % (I1+1)
+
+## Work out the param indices of the params to be marginalised, for using ranges etc.
+IA, IB, IC, ID, IE = None, None, None, None, None, None
+for i in xrange(NOPS):
+    if i != I1:
+        if IA is None:
+            IA = i
+        elif IB is None:
+            IB = i
+        elif IC is None:
+            IC = i
+        elif ID is None:
+            ID = i
+        elif IE is None:
+            IE = i
+        
+def chi2_tot(ihists, dhists, params, hnames=None, errmaxs={}):
+    chi2_tot, ndf_tot = 0, 0
+    if not hnames:
+        hnames = ihists.keys()
+    for hn in hnames:
+        chi2_h, ndf_h = chi2_hist(ihists[hn], dhists[hn], params, errmaxs.get(hn))
+        chi2_tot += chi2_h
+        ndf_tot += ndf_h
+    return chi2_tot, ndf_tot
+
+## Define a chi2 function over the remaining params
+def chi2_marginalise_6(a,b,c,d,e):
+    global NBINS
+    freeargs = [e,d,c,b,a]
+    args = []
+    for i in xrange(6):
+        if i == I1:
+            args.append(X)
+        else:
+            args.append(freeargs.pop())
+    assert len(args) == 6
+    assert len(freeargs) == 0
+    c2, NBINS = chi2_tot(IHISTOS, DHISTOS, args, HNAMES, MAXERRS)
+    #print (a,b,c), c2, n, c2/n
+    return c2
+
+def chi2_marginalise_11(a,b,c,d,e,f,g,h,i):
+    global NBINS
+    freeargs = [i,h,g,f,e,d,c,b,a]
+    args = []
+    for i in xrange(11):
+        if i == I1:
+            args.append(X)
+        else:
+            args.append(freeargs.pop())
+    assert len(args) == 11
+    assert len(freeargs) == 0
+    c2, NBINS = chi2_tot(IHISTOS, DHISTOS, args, HNAMES, MAXERRS)
+    return c2
+
+## Number of Minuit scan points
+NSCAN = opts.NSCAN
+
+## Loop over pixels
+NBINS = None
+chi2s = np.zeros(N)
+IX, X = 0, 0 
+npoint = 0
+## Marginalising in remaining params                                                                                                                                                                     
+try:
+    if NOPS == 3:
+        m = prof.Minuit(chi2_marginalise_3, strategy=2, a=0, limit_a=RANGES[IA])
+        # print "\nScanning"                                                                                                                                                                              
+        m.scan(("a", NSCAN, RANGES[IA][0], RANGES[IA][1]),
+               ("b", NSCAN, RANGES[IB][0], RANGES[IB][1]))
+    elif NOPS == 7:
+        m = prof.Minuit(chi2_marginalise_6, strategy=2, a=0, b=0, c=0, d=0, e=0, limit_a=RANGES[IA], limit_b=RANGES[IB], limit_c=RANGES[IC], limit_d=RANGES[IE], limit_e=RANGES[IE])
+        # print "\nScanning"                                                                                                                                                                              
+        m.scan(("a", NSCAN, RANGES[IA][0], RANGES[IA][1]),
+               ("b", NSCAN, RANGES[IB][0], RANGES[IB][1]),
+               ("c", NSCAN, RANGES[IC][0], RANGES[IC][1]),
+               ("d", NSCAN, RANGES[ID][0], RANGES[ID][1]),
+               ("e", NSCAN, RANGES[IE][0], RANGES[IE][1]))
+            # print "\nOptimising"                                                                                                                                                                   
+    m.migrad()
+            # print "\nDone!"
+    print IX
+    chi2s[IX] = m.fval
+    print m.values["a"], m.values["b"], m.values["c"], m.values["d"], m.values["e"], m.fval
+
+except prof.MinuitError, e:
+    print "Error in point %d: %s" % (npoint, str(e))
+    chi2s[IX] = 0
+
+print "chi2 abs minimum =", np.amin(chi2s)
+np.savetxt("chi2s_min_%dd_%s.dat" % (NOPS, paramidstr), np.c_[x,chi2s], fmt="%.10f")
