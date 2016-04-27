@@ -13,7 +13,7 @@ import optparse
 op = optparse.OptionParser(usage=__doc__)
 
 op.add_option("--xsec",dest="XSEC", default=False, action="store_true", help="Get total cross-section only, no event plotting.")
-op.add_option("--npts",dest="NSCAN", default=1000, help="number of scan points")
+op.add_option("--npts",dest="NSCAN", default=1000, type=int,help="number of scan points")
 #op.add_option("--parallel",dest=BATCH, default=False, action="store_true", help="Generate a grid of sample points to run in parallel.")
 #op.add_option("--ncoeff",dest=NCOEFF, default=6, help="Check dimensionality of parameter space is same as ")
 

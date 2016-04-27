@@ -3,17 +3,17 @@
 ## script to extract data histograms from ME topdrawer file
 ## using some command line magic
 ## TODO: pythonise this at some point
-## Usage: ./extract_dats <histo_name> (in double quotes!) <name_of_outfile>
-## Run with no arguments to see available histos
+## Usage: ./extract_dats <infile_name> <histo_name> (in quotes!) <outfile_name>
+## Run with one argument to see available histos
 
 ## function to count histograms contained in file
 function find_histos() {
     grep 'TITLE TOP' $1 | cut -d '"' -f2
 }
 
-infile=plots.top
-histo=${1}
-outfile=${2}
+infile=${1}
+histo=${2}
+outfile=${3}
 
 if [ ! -e $infile ]
 then
@@ -21,12 +21,12 @@ then
     exit 1
 fi
 
-if [ $# -eq 0 ]
+if [ $# -eq 1 ]
 then
     echo "Available histograms in this file are:"
     find_histos $infile
     exit 0
-elif [[ ! $# -eq 0 && ! $# -eq 2 ]]
+elif [[ ! $# -eq 1 && ! $# -eq 3 ]]
 then
     echo "Wrong number of arguments. Exiting"
     exit 2
