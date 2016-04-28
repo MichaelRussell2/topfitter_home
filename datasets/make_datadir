@@ -14,6 +14,9 @@ import optparse
 op = optparse.OptionParser(usage=__doc__)
 op.add_option("--corr", dest="CORR", default=False, action="store_true", help="Correlation matrices included in this dataset")
 op.add_option("--tag", dest="TAG", default="", help="Description tag for the dataset")
+op.add_option("--coll", dest="COLLIDER", default="LHC7", help="Collider that dataset was collected at (default=%default)")
+op.add_option("--proc", dest="PROCESS", default="ttbar", help="Process to generate (default=%default)")
+op.add_option("--expt", dest="EXPERIMENT", default="ATLAS", help="Experiment name of dataset (default=%default)")
 
 opts, args = op.parse_args()
 
@@ -35,4 +38,9 @@ if opts.CORR:
 tfile=os.path.join(dirname,"TAG")    
 with open(tfile,'w') as f:
     f.write("%s \n" % opts.TAG)
+    f.close()     
+
+sfile=os.path.join(dirname,"settings")    
+with open(sfile,'w') as f:
+    f.write("%s,%s,%s \n" % (opts.EXPERIMENT, opts.COLLIDER, opts.PROCESS))
     f.close()     
