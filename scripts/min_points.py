@@ -1,24 +1,25 @@
 #! /usr/bin/env python
 
 """\
+%prog [ipol_order] [ncoeff]
 Calculate minimum number of points needed for a given ipol order
 """
-import math, operator
-from functools import reduce
+import math, sys
 import optparse
-op = optparse.OptionParser()
-op.add_option("--n","--N", dest="N", type=int, default=2, help="Interpolation order (default: %default)")
-op.add_option("--p","--P", dest="P", type=int, default=6, help="Number of coefficients to fit (default=6)")
+op = optparse.OptionParser(usage=__doc__)
 opts, args = op.parse_args()
 
 import numpy as np
 
-n=opts.N
-P=opts.P
+if len(args)!=2:
+    print "Wrong number of arguments"
+    sys.exit(1)
+
+n, P = int(args[0]), int(args[1])
 
 if n>6:
     print "Don't have that high a polynomial order available"
-    exit(1)
+    sys.exit(1)
         
 def Prod(i,P):
     a=[]
