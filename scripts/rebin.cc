@@ -4,16 +4,17 @@
   //input and output histograms are in the form: x y dy 
  
   //names of input and output files
-  char * infile1 = "mij.dat";
+  char * infile1 = "mtt.dat";
   char * infile2 = "pt.dat";
-  char * infile3 = "absyij.dat";
+  char * infile3 = "absy.dat";
   string * infiles[] = {infile1, infile2, infile3};
 
   int nfiles = sizeof(infiles)/sizeof(*infiles);
-  
-  char * outfile1 = "mij_r.dat";
+
+  char * outfile1 = "mtt_r.dat";
   char * outfile2 = "pt_r.dat";
-  char * outfile3 = "absyij_r.dat";
+  char * outfile3 = "absy_r.dat";
+  
   string * outfiles[] = {outfile1, outfile2, outfile3};
 
   //new bins for files 1, 2 and 3

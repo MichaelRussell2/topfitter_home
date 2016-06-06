@@ -72,7 +72,7 @@ c************************************************************************
       double precision pm
 
       pm = p(0)
-      y = abs(.5d0*dlog((pm+p(3))/(pm-p(3))))
+      y = .5d0*dlog((pm+p(3))/(pm-p(3)))
       
       end
 
@@ -271,8 +271,10 @@ C     User function for plotting and cuts
 C****************************************************************************
       implicit none
       double precision p1(0:3)
+      double precision y
+      external y
 
-      X1=abs(p1(1)**2+p1(2)**2+p1(3)**2)
+      X1=abs(y(p1))
 
       end
 

@@ -20,8 +20,10 @@ outdir="results_reweighted"
 shutil.rmtree(outdir,ignore_errors=True)
 os.mkdir(outdir)
 
+dsize = len(os.walk(indir).next()[1])
+
 import numpy as np
-for i in xrange(1000):
+for i in xrange(dsize):
     os.mkdir(os.path.join(outdir,"%03d" %i))
     shutil.copy(os.path.join(indir,"%03d" %i,"used_params"),os.path.join(outdir,"%03d" %i))
 
