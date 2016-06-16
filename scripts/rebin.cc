@@ -6,21 +6,21 @@
   //names of input and output files
   char * infile1 = "mtt.dat";
   char * infile2 = "pt.dat";
-  char * infile3 = "absy.dat";
+  char * infile3 = "y.dat";
   string * infiles[] = {infile1, infile2, infile3};
 
   int nfiles = sizeof(infiles)/sizeof(*infiles);
 
   char * outfile1 = "mtt_r.dat";
   char * outfile2 = "pt_r.dat";
-  char * outfile3 = "absy_r.dat";
+  char * outfile3 = "y_r.dat";
   
   string * outfiles[] = {outfile1, outfile2, outfile3};
 
   //new bins for files 1, 2 and 3
-  Double_t  newBins1[]={250,450,550,700,950,2700};
-  Double_t  newBins2[]={0,50,100,150,200,250,350,800};
-  Double_t  newBins3[]={0,0.5,1.0,2.5};
+  Double_t  newBins1[]={340,380,470,620,820,1100,1600};
+  Double_t  newBins2[]={0,65,125,200,290,400};
+  Double_t  newBins3[]={-2.5,-1.6,-1.0,-0.5,0.0,0.5,1.0,1.6,2.5};
 
   Double_t *newBins[] = {newBins1,newBins2,newBins3};
 
@@ -35,7 +35,7 @@
   //                  add overflow to last bin ??
   
   //define binning options
-  bool pb = true;
+  bool pb = false;
   bool bin_width = true;
   bool normalise = true;
   bool overflow = true;
@@ -83,8 +83,8 @@
     
     fout.open(outfile);
     for (int k=1; k < h1_rebin->GetSize()-1; k++) { 
-       if (pb) fout << h1_rebin->GetBinCenter(k) << "\t" << h1_rebin->GetBinContent(k) << "\t" << h1_rebin->GetBinError(k) << endl;
-       else    fout << h1_rebin->GetBinCenter(k) << "\t" << 1000*h1_rebin->GetBinContent(k) << "\t" << 1000*h1_rebin->GetBinError(k) << endl;  
+      if (pb) fout << h1_rebin->GetBinLowEdge(k) << "\t" << h1_rebin->GetBinLowEdge(k+1) << "\t" << h1_rebin->GetBinContent(k) << "\t" << h1_rebin->GetBinError(k) << endl;
+      else    fout << h1_rebin->GetBinLowEdge(k) << "\t" << h1_rebin->GetBinLowEdge(k+1) << "\t" << 1000*h1_rebin->GetBinContent(k) << "\t" << 1000*h1_rebin->GetBinError(k) << endl;  
     }
     fout.close();
 

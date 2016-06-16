@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.7
+#! /usr/bin/env python
 
 """\
 %prog <datadir>
@@ -27,8 +27,8 @@ import numpy as np
 import math
 
 ## Load interpolated histograms from file
-IMETA = prof.read_meta(opts.IFILE)
-IHISTOS = prof.read_binnedipol(opts.IFILE)
+IMETA = prof.read_ipolmeta(opts.IFILE)
+IHISTOS = prof.read_binnedipols(opts.IFILE)
 HNAMES = IHISTOS.keys()
 
 ## Extract parameter info from ipol file
@@ -168,7 +168,7 @@ for IX, X in enumerate(xs):
         chi2_slice = chi2_marginalise_3(0,0)
     elif NOPS == 5:
         chi2_slice = chi2_marginalise_5(0,0,0,0)
-    elif NOPS == 7:
+    elif NOPS == 6:
         chi2_slice = chi2_marginalise_6(0,0,0,0,0)
     elif NOPS == 11:
         chi2_slice = chi2_marginalise_11(0,0,0,0,0,0,0,0,0,0)
@@ -192,7 +192,7 @@ if (opts.CLS):
     print 'Best fit point at %s = %.f' % (paramidstr, Xmin)
 
 if (opts.DELTAS):
-    delta_chi2_slice = np.full([N], np.nan)
+    delta_chi2s_slice = np.full([N], np.nan)
     XC = []
     for IX, X in enumerate(xs):
         npoint += 1
@@ -200,7 +200,7 @@ if (opts.DELTAS):
 
         ## As before but with delta-chi2 limit setting
         cl = st.chi2.ppf(0.95, 1)
-        if (delta_chi2_slice[IX] < cl ):
+        if (delta_chi2s_slice[IX] < cl ):
             XC.append(X)
                 
     print
@@ -214,5 +214,5 @@ if (opts.DELTAS):
         
     
 np.savetxt("chi2s_slice_%dd_%s.dat" % (NOPS, paramidstr), chi2s_slice.T, fmt="%.10f")
-#np.savetxt("delta_chi2s_slice_%dd_%s.dat" % (NOPS, paramidstr), chi2s_slice.T, fmt="%.10f")
+#np.savetxt("delta_chi2s_slice_%dd_%s.dat" % (NOPS, paramidstr), delta_chi2s_slice.T, fmt="%.10f")
 
