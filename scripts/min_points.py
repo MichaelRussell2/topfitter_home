@@ -12,7 +12,7 @@ opts, args = op.parse_args()
 import numpy as np
 
 if len(args)!=2:
-    print "Wrong number of arguments"
+    print "Enter interpolation order and number of coefficients"
     sys.exit(1)
 
 n, P = int(args[0]), int(args[1])

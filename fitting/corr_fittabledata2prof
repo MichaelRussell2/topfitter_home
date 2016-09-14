@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.7
+#! /usr/bin/env python
 
 """\
 Usage: %prog procdir1 [procdir2 ...]
@@ -96,24 +96,19 @@ def dat2yoda(infile, prefix="/TOPFITTER"):
             if len(vals) == 2: # no x value
                 yerr = vals[1] if vals[1] else 0.0 #opts.ERR * vals[0] if opts.ERR else 0.0
                 s.addPoint(0, vals[0], 0, yerr)
-            else: # if len(vals) >= 3:
-                ## Work out bin edges (MadAnalysis... sigh)
-                x = vals[0]
-                xerrm = ( x - valslist[n-1][0])/2 if n-1 >= 0 else 0
-                xerrp = (-x + valslist[n+1][0])/2 if n+1 < len(valslist) else 0
-                # if xerrm is None and xerrp is not None:
-                #     xerrm = xerrp
-                # if xerrp is None and xerrm is not None:
-                #     xerrp = xerrm
-                ##
+            elif len(vals) >= 4: #format xlow xhigh y deltay
+                xerrm = vals[0]
+                xerrp = vals[1]
+                x = xerrp - xerrm
                 if not xerrm and not xerrp:
                     xerrm = xerrp = 0.5
-                #
-                y = vals[1]
-                #yerr2 = sum((v if v else opts.ERR * y if opts.ERR else 0.0) for v in vals[2:])
+                y = vals[2]
                 yerr2 = sum(v**2 for v in vals[2:])
                 yerr = math.sqrt(yerr2)
                 s.addPoint(x, y, (xerrm, xerrp), yerr)
+            else:
+                print "What is this data format supposed to be?"
+                continue
     return s #if s.numPoints else None
 
 

@@ -8,7 +8,7 @@ plot_events: $(PLOT)
 	$(F77) $(FFLAGS) -o plot_events $(PLOT)
 
 clean:	
-	rm -f *.o plot_events
+	rm -f plot_events *.o
 
 kin_func.o: info.inc
 plot_events.o: info.inc
