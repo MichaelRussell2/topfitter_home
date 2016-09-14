@@ -5,7 +5,7 @@
 
 Initialise a topfitter dataset directory.
 """
-import os, shutil, glob
+import os, shutil, glob, sys
 from sys import exit
 
 import optparse
@@ -14,7 +14,8 @@ op.add_option("--proc", dest="PROCESS", default="ttbar", help="Process to genera
 op.add_option("--coll", dest="COLLIDER", default="LHC7", help="Collider settings to use. For advanced options edit the card yourself (default=%default)")
 op.add_option("--mod", dest="MODEL", default="warsaw_d6", help="New physics model to test (default=%default)")
 op.add_option("--dat", dest="DATASET", default="1407.0371", help="arXiv code of dataset to fit to, see list (default=%default)")
-op.add_option("--list", dest="LIST", default=False, action="store_true", help="List available measurements to fit to and quit")
+op.add_option("--list-datasets", dest="LIST", default=False, action="store_true", help="List available measurements to fit to and quit")
+op.add_option("--list-processes", dest="LISTPROCS", default=False, action="store_true", help="List available processes and quit")
 op.add_option("--filter", dest="FILTER", default=None, help="Filter available measurements by various settings")
 op.add_option("--xsec", dest="XSEC", default=False, action="store_true", help="Cross-sections only, no MadAnalysis")
 op.add_option("--batch", dest="BATCH", default=False, action="store_true", help="Generate different MC runs in parallel on a batch farm")
@@ -24,7 +25,17 @@ opts, args = op.parse_args()
 database="datasets"
 path, datasets, files = os.walk(database).next()
 
-## list available measurements and/or filter by collider/process   
+## list available processes   
+if (not args and opts.LISTPROCS):
+    sys.path.append('dictionary')
+    from processes import dictionary as p_d
+    print
+    print "Process:  Description\n"
+    for key, val in p_d.iteritems():
+        print "%s   %s" % (key, val)
+    exit(0)
+
+## list available measurements and/or filter by collider/process 
 if (not args and opts.LIST and not opts.FILTER ):
     print "Possible measurements to fit to:\n"
     for d in datasets:
@@ -35,7 +46,7 @@ if (not args and opts.LIST and not opts.FILTER ):
 elif (not args and opts.LIST and opts.FILTER ):
     print "Measurements matching %s:\n" % opts.FILTER
     for d in datasets:
-        if opts.FILTER in open(os.path.join(database,d,'settings')).read():
+        if (opts.FILTER.lower() or opts.FILTER.upper()) in open(os.path.join(database,d,'settings')).read():
             with open(os.path.join(database,d,"TAG"),'r') as tag:
                 tag=tag.read()
             print '%s: %s' % (d, tag)
@@ -47,6 +58,7 @@ elif len(args)>1:
     print "Too many arguments. Exiting"
     exit(1)    
 
+    
 ## initialise output directory    
 OUTDIR=args[0]
 shutil.rmtree(OUTDIR,ignore_errors=True)
@@ -99,6 +111,9 @@ except:
 ## process to fit
 proc = opts.PROCESS
 procz = proc+".tgz"
+
+## print out info to screen
+print "Initialising a topfitter directory named %s\nProcess %s with %s collider settings\nInput data from %s" % (OUTDIR, proc, opts.COLLIDER, dataset )
 
 ## copy MadGraph directory
 samples=os.path.join(OUTDIR,"samples")
