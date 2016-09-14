@@ -15,6 +15,7 @@ op.add_option("--coll", dest="COLLIDER", default="LHC7", help="Collider settings
 op.add_option("--mod", dest="MODEL", default="warsaw_d6", help="New physics model to test (default=%default)")
 op.add_option("--dat", dest="DATASET", default="1407.0371", help="arXiv code of dataset to fit to, see list (default=%default)")
 op.add_option("--list", dest="LIST", default=False, action="store_true", help="List available measurements to fit to and quit")
+op.add_option("--filter", dest="FILTER", default=None, help="Filter available measurements by various settings")
 op.add_option("--xsec", dest="XSEC", default=False, action="store_true", help="Cross-sections only, no MadAnalysis")
 op.add_option("--batch", dest="BATCH", default=False, action="store_true", help="Generate different MC runs in parallel on a batch farm")
 
@@ -22,14 +23,23 @@ opts, args = op.parse_args()
 
 database="datasets"
 path, datasets, files = os.walk(database).next()
-   
-if (not args and opts.LIST):
+
+## list available measurements and/or filter by collider/process   
+if (not args and opts.LIST and not opts.FILTER ):
     print "Possible measurements to fit to:\n"
     for d in datasets:
         with open(os.path.join(database,d,"TAG"),'r') as tag:
             tag=tag.read()
         print '%s: %s' % (d, tag)
-    exit(0)    
+    exit(0)
+elif (not args and opts.LIST and opts.FILTER ):
+    print "Measurements matching %s:\n" % opts.FILTER
+    for d in datasets:
+        if opts.FILTER in open(os.path.join(database,d,'settings')).read():
+            with open(os.path.join(database,d,"TAG"),'r') as tag:
+                tag=tag.read()
+            print '%s: %s' % (d, tag)
+    exit(0)            
 elif (not args and not opts.LIST):
     print "Don't forget a name for the initialised directory"
     exit(1)
