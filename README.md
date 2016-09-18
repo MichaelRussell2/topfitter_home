@@ -48,17 +48,17 @@ Use the `list-foo` options to see available datasets/processes. This command wil
 make a new directory, with the following scripts
 
      * generate_space.py: Generate the parameter space to sample the points from.
-       			    Additional options can be given here, e.g. number of
-			    sample points, number of dimensions, boundaries of the
-			    space, logarithmic or linear sampling.
+                          Additional options can be given here, e.g. number of
+                          sample points, number of dimensions, boundaries of the
+                          space, logarithmic or linear sampling.
 
      * run_scan.py: Start generating the samples, only choice here is the number of
-       		      scan points, and whether or not to also plot events with
-		      MadAnalysis. You'll need to look into the script yourself to
-		      ensure that the right operators are being given to MadEvent.
-		      Alternatively if you have access to a batch farm, you can use the
-		      script make_batchgrid.py to make a grid of points that can be set
-		      to run in parallel with your own PBS submission script.
+                    scan points, and whether or not to also plot events with
+                    MadAnalysis. You'll need to look into the script yourself to
+                    ensure that the right operators are being given to MadEvent.
+                    Alternatively if you have access to a batch farm, you can use the
+                    script make_batchgrid.py to make a grid of points that can be set
+                    to run in parallel with your own PBS submission script.
 
 For MadAnalysis settings, edit the file `ma_card.dat` in the MadAnalysis directory.
 Be careful about the binning though 
