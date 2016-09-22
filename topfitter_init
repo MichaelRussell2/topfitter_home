@@ -46,7 +46,7 @@ if (not args and opts.LIST and not opts.FILTER ):
 elif (not args and opts.LIST and opts.FILTER ):
     print "Measurements matching %s:\n" % opts.FILTER
     for d in datasets:
-        if (opts.FILTER) in open(os.path.join(database,d,'settings')).read():
+        if opts.FILTER.upper() in open(os.path.join(database,d,'settings')).read():
             with open(os.path.join(database,d,"TAG"),'r') as tag:
                 tag=tag.read()
             print '%s: %s' % (d, tag)
