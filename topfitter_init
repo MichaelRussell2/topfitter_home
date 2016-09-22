@@ -35,6 +35,7 @@ if (not args and opts.LISTPROCS):
         print "%s   %s" % (key, val)
     exit(0)
 
+
 ## list available measurements and/or filter by collider/process 
 if (not args and opts.LIST and not opts.FILTER ):
     print "Possible measurements to fit to:\n"
@@ -42,15 +43,18 @@ if (not args and opts.LIST and not opts.FILTER ):
         with open(os.path.join(database,d,"TAG"),'r') as tag:
             tag=tag.read()
         print '%s: %s' % (d, tag)
-    exit(0)
+    exit(0)    
 elif (not args and opts.LIST and opts.FILTER ):
     print "Measurements matching %s:\n" % opts.FILTER
+    if "," in opts.FILTER:
+        filters = opts.FILTER.split(",")
+    else: filters = opts.FILTER
     for d in datasets:
-        if opts.FILTER.upper() in open(os.path.join(database,d,'settings')).read():
+         if all(filter in open(os.path.join(database,d,'settings')).read() for filter in filters):
             with open(os.path.join(database,d,"TAG"),'r') as tag:
                 tag=tag.read()
             print '%s: %s' % (d, tag)
-    exit(0)            
+    exit(0)
 elif (not args and not opts.LIST):
     print "Don't forget a name for the initialised directory"
     exit(1)
@@ -61,11 +65,16 @@ elif len(args)>1:
     
 ## initialise output directory    
 OUTDIR=args[0]
-shutil.rmtree(OUTDIR,ignore_errors=True)
-os.mkdir(OUTDIR)
+if os.path.exists(OUTDIR):
+    ans = raw_input("%s already exists. Overwrite this directory? (y/n)\n" % OUTDIR)
+    if ans.lower() == ('y'):
+        shutil.rmtree(OUTDIR,ignore_errors=True)
+        os.mkdir(OUTDIR)
+    else:
+        print "Exiting"
+        exit(0)
 
 ## index process/collider options
-processes, colliders, models = [], [], []
 processes=os.walk("processes").next()[2]
 colliders=os.walk("colliders").next()[2]
 models=os.walk("models").next()[2]
@@ -113,7 +122,7 @@ proc = opts.PROCESS
 procz = proc+".tgz"
 
 ## print out info to screen
-print "Initialising a topfitter directory named %s\nProcess %s with %s collider settings\nInput data from %s" % (OUTDIR, proc, opts.COLLIDER, dataset )
+print "\nInitialising a topfitter directory named %s\nProcess %s with %s collider settings\nInput data from %s" % (OUTDIR, proc, opts.COLLIDER, dataset )
 
 ## copy MadGraph directory
 samples=os.path.join(OUTDIR,"samples")
