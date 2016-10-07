@@ -7,7 +7,9 @@ Add a measurement to the topfitter database
 
 Please use the arXiv identifier as the data directory name. 
 If none is available, e.g. if the data is from a CONF note,
-please note this in the dataset TAG, as the dataset is likely to be superseded
+please note this in the dataset settings file, as the dataset
+is likely to be superseded.
+Use the paper title as the dataset description TAG
 """
 
 ## @TODO: Multiple miscellaneous options: showered, rivet, boosted?
@@ -26,8 +28,10 @@ op.add_option("--conf", dest="CONF", default=False, action="store_true",help="Da
 op.add_option("--new", dest="NEW", default=False, action="store_true",help="Data has not been used in topfitter yet (default=%default)")
 
 opts, args = op.parse_args()
-
-if len(args)!= 1:
+if not args:
+    op.print_help()
+    exit(0)
+elif len(args)> 1:
     print "Wrong no. of arguments. Exiting"
     exit(1)
 
@@ -47,11 +51,13 @@ print "Adding dataset %s to topfitter database" % dirname
 print "Process type:  %s" % opts.PROCESS
 print "Data is from the %s experiment at %s" % (opts.EXPERIMENT, opts.COLLIDER)
 
+## Store description tag
 tfile=os.path.join(dirname,"TAG")    
 with open(tfile,'w') as f:
     f.write("%s \n" % opts.TAG)
     f.close()     
 
+## Store dataset settings
 sfile=os.path.join(dirname,"settings")    
 with open(sfile,'w') as f:
     f.write("%s,%s,%s" % (opts.EXPERIMENT, opts.COLLIDER, opts.PROCESS))
