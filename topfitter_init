@@ -16,7 +16,7 @@ op.add_option("--mod", dest="MODEL", default="warsaw_d6", help="New physics mode
 op.add_option("--dat", dest="DATASET", default="1407.0371", help="arXiv code of dataset to fit to, see list (default=%default)")
 op.add_option("--list-datasets", dest="LIST", default=False, action="store_true", help="List available measurements to fit to and quit")
 op.add_option("--list-processes", dest="LISTPROCS", default=False, action="store_true", help="List available processes and quit")
-op.add_option("--filter", dest="FILTER", defaut=None,,help="Filter available measurements by various settings (also see list-filters)")
+op.add_option("--filter", dest="FILTER", default=None,help="Filter available measurements by various settings (also see list-filters)")
 op.add_option("--xsec", dest="XSEC", default=False, action="store_true", help="Cross-sections only, no MadAnalysis")
 op.add_option("--batch", dest="BATCH", default=False, action="store_true", help="Generate different MC runs in parallel on a batch farm")
 
@@ -62,13 +62,12 @@ elif (not args and opts.LIST and opts.FILTER ):
                 print '%s: %s' % (d, tag)
         exit(0)
 elif (not args and not opts.LIST):
-    print "Don't forget a name for the initialised directory"
+    op.print_help()
     exit(1)
 elif len(args)>1:
     print "Too many arguments. Exiting"
     exit(1)    
 
-    
 ## initialise output directory    
 OUTDIR=args[0]
 if os.path.exists(OUTDIR):
@@ -154,7 +153,9 @@ for s in scripts:
 ## kfactors
 kfacdir=os.path.join(OUTDIR,"kfactors")
 os.mkdir(kfacdir)
-kfacfiles=glob.glob( os.path.join("kfactors",opts.COLLIDER,"*.dat"))
+kfacfiles=glob.glob(os.path.join("kfactors",opts.COLLIDER,opts.PROCESS,"*.dat"))
+if not kfacfiles:
+    print "\nWARNING: K-factors not found for this collider/process combination\n"
 for f in kfacfiles:
     shutil.copy(f,kfacdir)
 
@@ -162,4 +163,4 @@ for f in kfacfiles:
 MA="MadAnalysis"
 if not opts.XSEC:
     shutil.copytree(MA,os.path.join(samples,MA))
-    
+   

@@ -42,7 +42,7 @@ number, e.g. ./make_datadir 1101.1001 --coll TEVT --expt D0 --proc ttbar
 ## 3. Getting started
 
 To initialise a new dataset directory, run the script ./topfitter_init, e.g.
-   `./topfitter_init new_measurement_name --proc ttZ --coll LHC13 --dat 1510.05302`
+   `./topfitter_init new_measurement_name --proc ttZ --coll LHC8 --dat 1509.05276`
 
 Use the `list-foo` options to see available datasets/processes. This command will
 make a new directory, with the following scripts
