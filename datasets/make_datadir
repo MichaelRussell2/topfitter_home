@@ -26,6 +26,7 @@ op.add_option("--proc", dest="PROCESS", default="ttbar", help="Process to genera
 op.add_option("--expt", dest="EXPERIMENT", default="ATLAS", help="Experiment name of dataset (default=%default)")
 op.add_option("--conf", dest="CONF", default=False, action="store_true",help="Data is from a conf note (default=%default)")
 op.add_option("--new", dest="NEW", default=False, action="store_true",help="Data has not been used in topfitter yet (default=%default)")
+op.add_option("--misc", dest="MISC", default=None,help="Additional user-defined labels, comma-separated (default=%default)")
 
 opts, args = op.parse_args()
 if not args:
@@ -65,5 +66,7 @@ with open(sfile,'w') as f:
         f.write(",CONF")
     if opts.NEW:
         f.write(",NEW")
+    if opts.MISC:
+        f.write(","+opts.MISC)
     f.write("\n")
     f.close()     
