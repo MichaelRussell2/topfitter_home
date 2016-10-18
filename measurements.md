@@ -66,7 +66,7 @@
 ---
 
 ## Measurements that have not been listed here have been excluded, for one of the
-   following reasons:
+## following reasons:
 
    * Data is not tabulated in paper or HepData; would need to read data from plots  
    * Data is not background subtracted, would need to generate backgrounds as well
