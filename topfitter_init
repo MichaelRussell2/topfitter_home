@@ -163,4 +163,3 @@ for f in kfacfiles:
 MA="MadAnalysis"
 if not opts.XSEC:
     shutil.copytree(MA,os.path.join(samples,MA))
-   

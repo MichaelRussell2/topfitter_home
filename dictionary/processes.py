@@ -17,6 +17,7 @@ dictionary = {
     #Unstable particles decayed
     "ttbar_s:": "Top pair production, in semileptonic decay channel",
     "ttbar_h:": "Top pair production, in fully hadronic decay channel",
+    "ttbar_l:": "Top pair production, in dileptonic decay channel",
     "topdk_h:": "Top decay width into hadrons",
     "topdk_l:": "Top decay width into leptons",
 }
