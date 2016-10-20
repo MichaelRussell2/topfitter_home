@@ -1,0 +1,18 @@
+README created by CDW
+
+Data is taken from tables 5-13 of the paper, representing the average
+of the e and mu channels. Datafiles are as follows:
+
+jet25.dat: jet multiplicity distribution with pT(jet)>25 GeV.
+jet40.dat: jet multiplicity distribution with pT(jet)>40 GeV.
+jet60.dat: jet multiplicity distribution with pT(jet)>60 GeV.
+jet80.dat: jet multiplicity distribution with pT(jet)>80 GeV.
+
+ptjet1.dat: pt distribution of the leading jet.
+ptjet2.dat: pt distribution of the second jet.
+ptjet3.dat: pt distribution of the third jet.
+ptjet4.dat: pt distribution of the fourth jet.
+ptjet5.dat: pt distribution of the fifth jet.
+
+All cross-sections are in pb. Total relative uncertainties have been
+converted to absolute errors.

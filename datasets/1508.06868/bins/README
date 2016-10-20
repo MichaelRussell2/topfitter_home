@@ -1,0 +1,12 @@
+README file created by CDW.
+
+Cross-sections correspond to the figures in table 15 of the paper, and
+the datafiles are labelled as follows:
+
+lepjets.dat: sigma_{ttb lepton-plus-jets}
+bmu.dat: sigma_{ttb e mu}
+ttbb.dat: sigma_{ttbb cut-based}
+
+The first two results have asymmetric systematic errors. I have added
+the upper and lower errors in quadrature, then shifted the central
+value to give a symmetric error band.
