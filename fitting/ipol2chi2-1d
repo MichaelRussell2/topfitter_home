@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+! /usr/bin/env python2.7
 
 """\
 %prog <datadir>
@@ -28,7 +28,7 @@ import math
 
 ## Load interpolated histograms from file
 IMETA = prof.read_ipolmeta(opts.IFILE)
-IHISTOS = prof.read_binnedipols(opts.IFILE)
+IHISTOS = prof.read_binnedipol(opts.IFILE)
 HNAMES = IHISTOS.keys()
 
 ## Extract parameter info from ipol file
@@ -61,15 +61,9 @@ for hn, hs in MCHISTOS.iteritems():
 ## Exclude unwanted data
 for i, hn in enumerate(HNAMES):
     keep = True
-    # if "ATLAS_TCHAN_7TEV_TOP/pt" in hn or "ATLAS_TCHAN_7TEV_ANTITOP/pt" in hn:
-    #     IHISTOS[hn].bins = IHISTOS[hn].bins[:-2]
-    #     DHISTOS[hn].bins = DHISTOS[hn].bins[:-2]
     if not keep:
         print "Skipping", hn
         del HNAMES[i]
-
-
-print
 
 def chi2_hist(ihist, dhist, params, errmaxs=None):
     assert len(ihist.bins) == len(dhist.bins)
@@ -91,7 +85,7 @@ def chi2_hist(ihist, dhist, params, errmaxs=None):
                 ey12, ey22 = derr1**2 + ierr1**2 + ipolerr1**2,  derr2**2 + ierr2**2 + ipolerr2**2
                 ey2 = math.sqrt(ey12*ey22)
                 if (dy1 and not ey2):# or (dy2 and not ey2):
-                    print "WARNING: Zero error for non-zero bin in chi2 calculation for %s:%d. Skipping..." % (ihist, nb)
+#                    print "WARNING: Zero error for non-zero bin in chi2 calculation for %s:%d. Skipping..." % (ihist, nb2)
                     continue
                 if (ey2):
                     chi2_b = dy1*cov12*dy2/ey2
@@ -120,32 +114,18 @@ print "Making C_%d scan" % (I1+1)
 paramidstr = "C%d" % (I1+1)
 
 ## Define a chi2 function over the remaining params
-def chi2_marginalise_6(a,b,c,d,e):
+def chi2_marginalise(*args):
     global NBINS
-    freeargs = [e,d,c,b,a]
-    args = []
-    for i in xrange(6):
+    freeargs = list(args)[::-1]
+    nargs = []
+    for i in xrange(len(args)+1):
         if i == I1:
-            args.append(X)
+            nargs.append(X)
         else:
-            args.append(freeargs.pop())
-    assert len(args) == 6
+            nargs.append(freeargs.pop())
+    assert len(nargs) == len(args)+1 
     assert len(freeargs) == 0
-    c2, NBINS = chi2_tot(IHISTOS, DHISTOS, args, HNAMES, MAXERRS)
-    return c2
-
-def chi2_marginalise_12(a,b,c,d,e,f,g,h,i,j):
-    global NBINS
-    freeargs = [j,i,h,g,f,e,d,c,b,a]
-    args = []
-    for i in xrange(12):
-        if i == I1:
-            args.append(X)
-        else:
-            args.append(freeargs.pop())
-    assert len(args) == 12
-    assert len(freeargs) == 0
-    c2, NBINS = chi2_tot(IHISTOS, DHISTOS, args, HNAMES, MAXERRS)
+    c2, NBINS = chi2_tot(IHISTOS, DHISTOS, nargs, HNAMES, MAXERRS)   
     return c2
 
 ## Step size
@@ -164,26 +144,17 @@ for IX, X in enumerate(xs):
     npoint += 1
 
     ## Set all other params = 0
-    if NOPS == 3:
-        chi2_slice = chi2_marginalise_3(0,0)
-    elif NOPS == 5:
-        chi2_slice = chi2_marginalise_5(0,0,0,0)
-    elif NOPS == 6:
-        chi2_slice = chi2_marginalise_6(0,0,0,0,0)
-    elif NOPS == 12:
-        chi2_slice = chi2_marginalise_12(0,0,0,0,0,0,0,0,0,0)
-    chi2s_slice[IX] = chi2_slice
+    chi2_slice[IX] = eval("chi2_marginalise"+str((0,)*(NOPS-1)))
 
     ## Use scipy to calculate 95% conf intervals, with ndf = nbins
     if (opts.CLS):
         cl = st.chi2.ppf(0.95, NBINS)
-        if (chi2_slice < cl ):
+        if (chi2_slice[IX] < cl ):
             XC.append(X)
 
 ## Best fit point (there must be a neater way of getting this?)            
 Xmin =  low+step*np.argmin(chi2s_slice)
 chi2min = np.min(chi2s_slice)
-
 
 if (opts.CLS):
     print
@@ -209,9 +180,6 @@ if (opts.DELTAS):
     print 'Best fit point at %s = %.f' % (paramidstr, Xmin)
     print
     
-    
-                        
-        
     
 np.savetxt("chi2s_slice_%dd_%s.dat" % (NOPS, paramidstr), chi2s_slice.T, fmt="%.10f")
 #np.savetxt("delta_chi2s_slice_%dd_%s.dat" % (NOPS, paramidstr), delta_chi2s_slice.T, fmt="%.10f")
