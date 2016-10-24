@@ -1,0 +1,22 @@
+README created by CDW
+
+This directory contains data from tables 2 and 3 of
+arXiv:1203.5015. The data is presented with asymmetric error bars, and
+so I have added upper and lower errors in quadrature before shifting
+the central values to make a symmetric error band.
+
+Labelling of data files is as follows:
+
+fQ0_0.8.dat: Gap fraction f(Q_0) with |y|<0.8
+fQ0_0.8_1.5.dat: Gap fraction f(Q_0) with 0.8<=|y|<1.5
+fQ0_1.5_2.1.dat: Gap fraction f(Q_0) with 1.5<=|y|<2.1
+fQ0_2.1.dat: Gap fraction f(Q_0) with |y|<2.1
+
+The files fQsum_*.dat are as above, but for f(Q_{sum}).
+
+The format of each data file is
+
+Q    f    Err,
+
+where Q=Q_0 or Q_{sum}, f is the gap fraction, and Err the
+uncertainty.
