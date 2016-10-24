@@ -8,7 +8,7 @@ K-factors files have x y dy dy/y
 Output files x y dy
 """
 
-import sys, os, shutil
+import sys, os, shutil, glob
 
 import optparse
 op = optparse.OptionParser()
@@ -24,10 +24,12 @@ dsize = len(os.walk(indir).next()[1])
 
 import numpy as np
 for i in xrange(dsize):
+#    infiles = glob.glob(os.path.join(indir,"%03d" %i ,'*.dat'))
+    infiles = os.walk(os.path.join(indir, "%03d" %i)).next()[2]
     os.mkdir(os.path.join(outdir,"%03d" %i))
     shutil.copy(os.path.join(indir,"%03d" %i,"used_params"),os.path.join(outdir,"%03d" %i))
 
-    for infile in args:
+    for infile in infiles:
         ys_lo=np.loadtxt(os.path.join(indir,"%03d" %i ,infile),usecols=(0,1) )
         kfile=outfile=infile
         ks=np.loadtxt(os.path.join(kdir,kfile),usecols=(0,1,2,3))
