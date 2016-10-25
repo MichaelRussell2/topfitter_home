@@ -1,0 +1,28 @@
+README created by CDW.
+
+This directory contains the data from tables 1-6 of arXiv:1404.3171,
+labelled as follows:
+
+jet_pt30.dat: Jet multiplicity distribution with p_{T,jet} > 30GeV,
+dilepton channel.
+
+jet_pt60.dat: Jet multiplicity distribution with p_{T,jet} > 60GeV,
+dilepton channel.
+
+jet_pt35.dat: Jet multiplicity distribution with p_{T,jet} > 35 GeV,
+lepton + jets channel.
+
+gap_pt.dat: Gap fraction f(p_t).
+
+gap_ht.dat: Gap fraction f(H_t).
+
+The jet multiplicity files have format
+
+binmin    binmax    result    error
+
+where the bins correspond to the number of jets. The gap fraction
+files have format
+
+Q    result    error
+
+where Q is the p_t or H_t threshold.
