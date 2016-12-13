@@ -15,6 +15,7 @@ op = optparse.OptionParser(usage=__doc__)
 op.add_option("--xsec",dest="XSEC", default=False, action="store_true", help="Get total cross-section only, no event plotting.")
 op.add_option("--npts",dest="NSCAN", default=1000, type=int,help="number of scan points")
 op.add_option("--nevts",dest="NEVTS", default=100000, type=int,help="number of events per run")
+op.add_option("--info",dest="INFO", default=False, action="store_true", help="Print additional parameterinfo.")
 
 opts, args = op.parse_args()
 
@@ -56,6 +57,7 @@ for i in xrange(size):
         stderr.write("Number of operators must match dimensionality of parameter space. Exiting\n")
         exit(1)
 
+
     for line in fileinput.FileInput(f,inplace=1):
         for j in xrange(len(ops)):
             line = line.replace("0e-08 # %s " %ops[j], "%fe-08 # %s " % (cs[j], ops[j]))
@@ -64,10 +66,20 @@ for i in xrange(size):
         line = line.replace("100000 = nevents", "%d = nevents" %opts.NEVTS )
         print line,
 
+    if i == 1:
+        import datetime
+        start=datetime.datetime.now()
+        
+
     ## generate events
     os.chdir('samples')
     g=open('outputs/' + 'output%03d' %i , 'w' )
     print 'At run %03d' % i
+    if opts.INFO:
+        print "Wilson coefficients:"
+        for j in xrange(len(ops)):
+            print "%s = %f [TeV^-2]" % (ops[j], cs[j]/100)
+        print
     print 'Generating events'
     call(["./bin/generate_events","-f"], stdout=g )
     print 'Done'
@@ -92,24 +104,33 @@ for i in xrange(size):
             ## plot events and delete after plotting
             call(["gunzip","unweighted_events.lhe.gz"])
             call(["./analysis", "unweighted_events.lhe" ])
+            os.remove("unweighted_events.lhe")
             infiles = glob.glob("*.dat")
 
-            #check binning is same as kfactors
+            ## check binning is same as kfactors
             if i==0:
                 import numpy as np
                 
                 for infile in infiles:
-                    kfile = np.loadtxt(os.path.join(main,"kfactors",infile))
                     npinfile = np.loadtxt(infile)
                     try:
+                        kfile = np.loadtxt(os.path.join(main,"kfactors",infile))
                         assert len(npinfile) == len(kfile)
-                    except:
-                        ans=raw_input("Warning: binning mismatch for %s. Continue anyway? (y/n) " % infile)
-                        if ans.lower()== ('y'):
-                            continue
-                        else: exit(1)
+                    except AssertionError:
+                        ans=raw_input("Warning: k-factor binning mismatch for %s. Continue anyway? (y/n) " % infile)
+                    except IOError:
+                        ans=raw_input("Warning: no k-factors for %s. Continue anyway? (y/n) " % infile)
+                    if ans.lower()== ('y'):
+                        continue
+                    else: exit(1)
+                    
+            if i==1:
+                elapsed=datetime.datetime.now()
+                totdur = (opts.NSCAN-1)*((elapsed-start))
+                print "%d runs requested. Estimated finish time:" % opts.NSCAN
+                print (start+totdur).ctime()
+                print
                         
-            os.remove("unweighted_events.lhe")
             [shutil.copy(i,os.path.join(main,dname)) for i in infiles]
         else:
             print 'Events were not generated for run %03d' % i
