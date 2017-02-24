@@ -36,7 +36,8 @@ if size > dsize:
     exit(1)
 
 ## operators in model parameter card to scan
-ops=["CG","ReCuG33","C1qq1331","C8qu3311","C3qq1331","C8ud3311"]
+## ops=["CG","ReCuG33","C1qq1331","C8qu3311","C3qq1331","C8ud3311"]
+ops=["ReCuB33","ReCuW33","ReCPhiu33","ReC1Phiq33","ReC3Phiq33"]
 
 ## start running MadEvent samples
 for i in xrange(size):
@@ -123,17 +124,25 @@ for i in xrange(size):
                     if ans.lower()== ('y'):
                         continue
                     else: exit(1)
-                    
-            if i==1:
-                elapsed=datetime.datetime.now()
-                totdur = (opts.NSCAN-1)*((elapsed-start))
-                print "%d runs requested. Estimated finish time:" % opts.NSCAN
-                print (start+totdur).ctime()
-                print
-                        
             [shutil.copy(i,os.path.join(main,dname)) for i in infiles]
         else:
             print 'Events were not generated for run %03d' % i
+    else:
+        f = 'outputs/' + 'output%03d' %i
+        for line in open(f,"r"):
+            if re.match("(.*)Cross-section(.*)", line):
+                xsec = float(line.split()[2])
+                xsec_err = float(line.split()[4])
+                with open(os.path.join(main,dname,'xsec.dat'), 'w') as fout:
+                    fout.write('%g  %g\n' % (xsec, xsec_err))
+                    fout.close()
+
+    if i==1:
+        elapsed=datetime.datetime.now()
+        totdur = (opts.NSCAN-1)*((elapsed-start))
+        print "%d runs requested. Estimated finish time:" % opts.NSCAN
+        print (start+totdur).ctime()
+        print
 
     os.chdir(main)
     shutil.rmtree('samples/Events/run_01')

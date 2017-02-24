@@ -47,9 +47,9 @@
     char * infile = infiles[i];
     std::ifstream fin(infile, ifstream::in);
     while(!fin.eof()){
-      double x,y,z ;
-      fin >> x >> y >> z;
-      xs.push_back(x);
+      double xlo,xi,y,z;
+      fin >> xlo >> xi >> y >> z;
+      xs.push_back(xlo);
       ys.push_back(y);
       dys.push_back(z);
     }
@@ -57,8 +57,8 @@
     //get bin sizes, max and min x range: what about overflow?? 
     int nbins = xs.size()-1;
     double dx = fabs(xs.at(0)-xs.at(1));
-    double xmin = xs.at(0)-dx/2;
-    double xmax = xs.back()+dx/2;
+    double xmin = xs.at(0);
+    double xmax = xs.back()+dx;
 
     //store histograms in root objects
     TFile f("file.root","RECREATE"); 
