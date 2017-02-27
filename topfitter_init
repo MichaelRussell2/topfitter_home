@@ -6,14 +6,15 @@
 Initialise a topfitter dataset directory.
 """
 import os, shutil, glob, sys
+import textwrap
 from sys import exit
 
 import optparse
 op = optparse.OptionParser(usage=__doc__)
-op.add_option("--proc", dest="PROCESS", default="ttbar", help="Process to generate (default=%default)")
-op.add_option("--coll", dest="COLLIDER", default="LHC7", help="Collider settings to use. For advanced options edit the card yourself (default=%default)")
+op.add_option("--proc", dest="PROCESS", default=None, help="Process to generate (default=%default)")
+op.add_option("--coll", dest="COLLIDER", default=None, help="Collider settings to use. For advanced options edit the card yourself (default=%default)")
 op.add_option("--mod", dest="MODEL", default="warsaw_d6", help="New physics model to test (default=%default)")
-op.add_option("--dat", dest="DATASET", default="1407.0371", help="arXiv code of dataset to fit to, see list (default=%default)")
+op.add_option("--dat", dest="DATASET", default=None, help="arXiv code of dataset to fit to, see list (default=%default)")
 op.add_option("--list-datasets", dest="LIST", default=False, action="store_true", help="List available measurements to fit to and quit")
 op.add_option("--list-processes", dest="LISTPROCS", default=False, action="store_true", help="List available processes and quit")
 op.add_option("--filter", dest="FILTER", default=None,help="Filter available measurements by various settings (also see list-filters)")
@@ -32,7 +33,7 @@ if (not args and opts.LISTPROCS):
     print
     print "Process:  Description\n"
     for key, val in p_d.iteritems():
-        print "%s   %s" % (key, val)
+        print "\t%s   %s" % (key, val)
     exit(0)
 
 
@@ -42,7 +43,7 @@ if (not args and opts.LIST and not opts.FILTER ):
     for d in datasets:
         with open(os.path.join(database,d,"TAG"),'r') as tag:
             tag=tag.read()
-        print '%s: %s' % (d, tag)
+        print '\t%s: %s' % (d, tag)
     exit(0)    
 elif (not args and opts.LIST and opts.FILTER ):
     print "Measurements matching %s:\n" % opts.FILTER
@@ -52,7 +53,7 @@ elif (not args and opts.LIST and opts.FILTER ):
             if all(filt in open(os.path.join(database,d,'settings')).read() for filt in filters):
                 with open(os.path.join(database,d,"TAG"),'r') as tag:
                     tag=tag.read()
-                print '%s: %s' % (d, tag)
+                print '\t%s: %s' % (d, tag)
         exit(0)
     else:
         for d in datasets:
@@ -60,11 +61,21 @@ elif (not args and opts.LIST and opts.FILTER ):
 #            if (opts.FILTER.upper() or opts.FILTER.lower()) in open(os.path.join(database,d,'settings')).read():
                 with open(os.path.join(database,d,"TAG"),'r') as tag:
                     tag=tag.read()
-                print '%s: %s' % (d, tag)
+                print '\t%s: %s' % (d, tag)
+#                print '\t%s: %s'  % (d, '\n\t\t'.join(textwrap.wrap(tag, 80, break_long_words=False)) )
         exit(0)
-elif (not args and not opts.LIST):
+elif not args and not opts.LIST:
     op.print_help()
     exit(1)
+elif args and not opts.PROCESS:
+    print "Must choose a process type for the fit directory (see --list-processes option)"
+    exit(1)
+elif args and not opts.COLLIDER:
+    print "Must choose a collider type for the fit directory"
+    exit(1)
+elif args and not opts.DATASET:
+    print "Must choose a dataset to fit to (see --list-datasets option)"
+    exit(1)    
 elif len(args)>1:
     print "Too many arguments. Exiting"
     exit(1)    
