@@ -3,10 +3,10 @@
 """\
 %prog <datadir>
 
-Calculate chi2 per histogram at a given point
+Calculate interpolated chi2 per histogram at a given point in parameter space
 """
 import optparse
-op = optparse.OptionParser()
+op = optparse.OptionParser(usage=__doc__)
 op.add_option("--ifile", dest="IFILE", default="ipol.dat", help="file from which to read the bin interpolations (default: %default)")
 
 opts, args = op.parse_args()

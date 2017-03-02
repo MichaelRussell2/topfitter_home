@@ -20,7 +20,7 @@ outdir="results_reweighted"
 shutil.rmtree(outdir,ignore_errors=True)
 os.mkdir(outdir)
 
-dsize = len(os.walk(indir).next()[1])-1
+dsize = len(os.walk(indir).next()[1])
 import numpy as np
 for i in xrange(dsize):
     infiles = glob.glob(os.path.join(indir,"%03d" %i ,'*.dat'))

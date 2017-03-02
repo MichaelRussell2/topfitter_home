@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2.7
 
 """\
 Usage: %prog procdir1 [procdir2 ...]
@@ -103,7 +103,7 @@ def dat2yoda(infile, prefix="/TOPFITTER"):
                 if not xerrm and not xerrp:
                     xerrm = xerrp = 0.5
                 y = vals[2]
-                yerr2 = sum(v**2 for v in vals[2:])
+                yerr2 = sum(v**2 for v in vals[3:])
                 yerr = math.sqrt(yerr2)
                 s.addPoint(x, y, (xerrm, xerrp), yerr)
             else:
