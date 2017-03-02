@@ -14,7 +14,7 @@ import optparse
 op = optparse.OptionParser()
 opts, args = op.parse_args()
 
-indir="results"
+indir="results_log"
 kdir="kfactors"
 outdir="results_reweighted"
 shutil.rmtree(outdir,ignore_errors=True)
@@ -34,6 +34,7 @@ for i in xrange(dsize):
         ks=np.loadtxt(os.path.join(kdir,kfile),usecols=None)
         ks_nrows, ks_ncols = ks.shape[0], ks.shape[1]
 
+#        print i, infile
         assert len(y_lo) == ks_nrows 
         if ks_ncols == 3:
             y_nlo=y_lo*ks[:,1]

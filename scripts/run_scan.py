@@ -28,16 +28,18 @@ for d in dirs:
     os.mkdir(d)
 outdir=os.path.join(main,"results")
     
+
 ## get number of parameter space points
 size=opts.NSCAN 
-dsize = len(os.walk("param_space").next()[1])
+param_space = 'param_space_lin'
+dsize = len(os.walk(param_space).next()[1])
 if size > dsize:
     print "Number of requested points exceeds number of available param space points. Exiting"
     exit(1)
 
 ## operators in model parameter card to scan
-## ops=["CG","ReCuG33","C1qq1331","C8qu3311","C3qq1331","C8ud3311"]
-ops=["ReCuB33","ReCuW33","ReCPhiu33","ReC1Phiq33","ReC3Phiq33"]
+ops=["CG","ReCuG33","C1qq1331","C8qu3311","C3qq1331","C8ud3311"]
+## ops=["ReCuB33","ReCuW33","ReCPhiu33","ReC1Phiq33","ReC3Phiq33"]
 
 ## start running MadEvent samples
 for i in xrange(size):
@@ -45,11 +47,11 @@ for i in xrange(size):
     os.mkdir(dname)
     f = os.path.join('samples','Cards','param_card.dat')
     shutil.copy('param_card_sm.dat', f)
-    shutil.copy(os.path.join('param_space','%03d' % i, 'used_params'),dname)
+    shutil.copy(os.path.join(param_space,'%03d' % i, 'used_params'),dname)
     
     ## match operators to parameter space point
     cs = []
-    for ind, line in enumerate(open('param_space/%03d/used_params' % i )):
+    for ind, line in enumerate(open(param_space+'/%03d/used_params' % i )):
         cs.append(line.split()[1])
         cs[ind] = float(cs[ind])
     try:
@@ -117,6 +119,7 @@ for i in xrange(size):
                     try:
                         kfile = np.loadtxt(os.path.join(main,"kfactors",infile))
                         assert len(npinfile) == len(kfile)
+                        ans='y'
                     except AssertionError:
                         ans=raw_input("Warning: k-factor binning mismatch for %s. Continue anyway? (y/n) " % infile)
                     except IOError:
