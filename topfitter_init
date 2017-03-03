@@ -157,8 +157,8 @@ shutil.copy(colcard,runcard)
 modcard=os.path.join("models",opts.MODEL)
 shutil.copy(modcard,os.path.join(OUTDIR,"param_card_sm.dat"))
   
-## remaining scripts needed: pythonise them all!    
-scripts = ['run_scan.py','rebin.cc','generate_space.py','nlo_reweight.py','rebin_all.sh']
+## copy necessary scripts over    
+scripts = ['generate_space.py','run_scan.py','nlo_reweight.py','rebin.py']
 for s in scripts:
     shutil.copy(os.path.join("scripts",s),OUTDIR)
 
