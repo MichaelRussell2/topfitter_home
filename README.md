@@ -4,7 +4,6 @@
 
    * Python version > 2.7
    * gfortran (for MadEvent/MadAnalysis)
-   * ROOT for rebinning (to be phased out)
    * professor2 (for fitting) and associated dependencies
    
 ## 2. Directory structure:
@@ -39,6 +38,9 @@ number, e.g. ./make_datadir 1101.1001 --coll TEVT --expt D0 --proc ttbar
    * scripts: Various scripts needed throughout the analysis chain. More details on
      	      each in the next section
 
+   * analysis: a C++ program to plot histograms from les houches event files.
+     	       See the README there for more instructions
+
 ## 3. Getting started
 
 To initialise a new dataset directory, run the script ./topfitter_init, e.g.
@@ -52,37 +54,27 @@ make a new directory, with the following scripts
                           sample points, number of dimensions, boundaries of the
                           space, logarithmic or linear sampling.
 
-     * run_scan.py: Start generating the samples, only choice here is the number of
-                    scan points, and whether or not to also plot events with
-                    MadAnalysis. You'll need to look into the script yourself to
-                    ensure that the right operators are being given to MadEvent.
-                    Alternatively if you have access to a batch farm, you can use the
+     * run_scan.py: Start generating the samples using MadEvent and plotting the relevant
+       		    histograms. One can choose the number of scan points, the number of 
+		    events per scan point, and whether or not to also plot events 
+		    (default is yes) . You'll need to look into the script yourself
+		     to ensure that the right operators are being given to MadEvent.
+                    Alternatively if you have access to a batch queue, you can use the
                     script make_batchgrid.py to make a grid of points that can be set
                     to run in parallel with your own PBS submission script.
 
-For MadAnalysis settings, edit the file `ma_card.dat` in the MadAnalysis directory.
-Be careful about the binning though 
-(as described later)
+
 
 For storage reasons, the events are deleted after plotting. To change this, edit the
-`run_scan.py` file
+`run_scan.py` file.
 
-Once the events are finished plotting, a directory called plots contains the
-histograms from every run. These are in topdrawer format. To convert these to plain
-.dat format, use the `make_plots.sh` file, which in turn calls the `extract_dats`
-script, converting topdrawer to plain dat format (see comments in that
-file for how to use it)
+Then the leading order predictions are multiplied with kfactors using the `nlo_reweight.py`
+script. You shouldn't need to change anything here. The binning of the histograms
+have the same binning as the kfactors. 
 
-Then the leading order predictions are NLO reweighted with the `nlo_reweight.py`
-script. You shouldn't need to change anything here. The binning of the plots must
-have the same binning as the binning of the kfactors. By default, this is very fine,
-so that the same samples can be used to fit measurements with the same collider
-settings but different binning (e.g. the same samples can be used for both ATLAS and
-CMS 7 TeV ttbar data). This is only sensible for unfolded, parton-level (no cuts)
-'measurements', of course.
-
-Next, rebin the histograms. Edit the `rebin.cc` script to the binning/histogram names
-that you need, then run `rebin_all.sh` to loop over all the sample points. 
+Next, rebin the NLO histograms to have the same bins and normalisation
+as the data, using the `rebin.py` script. You shouldn't need to change anything here either. 
+This step is necessary because neither MCFM or FastPartons support non-uniform bin widths.
 
 Now the data can be converted for use with professor. See the scripts in the fitting
 directory. In particular, use `fittabledata2prof` to convert data to YODA, then
