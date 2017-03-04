@@ -2,35 +2,36 @@
 
 ## 1. Prerequisties:
 
-   * Python version > 2.7
-   * gfortran (for MadEvent/MadAnalysis)
-   * professor2 (for fitting) and associated dependencies
+   * Python version >= 2.7, and [numpy](http://www.numpy.org/)
+   * a fortran compiler (for MadEvent)
+   * [professor2](https://professor.hepforge.org/) (for fitting) and associated dependencies
    
 ## 2. Directory structure:
 
    * colliders: Input cards for MadEvent for the collider settings we are using
 
-   * datasets: All the available fittable datasets. Each measurement is contained in
-     	       a directory with the arXiv number of its publication as title. The
-	       directory contains a folder called bins, containing the bin contents
-	       of the measurements (optionally also a folder called corrs containing
-	       bin correlations if they have also been published). There is also a
-	       file called TAG, containing a brief description of the measurement
-	       (typically this is just the paper title) and a file called settings,
-	       containing the experiment name, collider type and process description,
-	       e.g. ATLAS,LHC8,ttZ.
+   * datasets: All the available fittable datasets. Each measurement is contained in  
+               a directory with the arXiv number of its publication as title. The 
+               directory contains a folder called `bins`, containing the bin contents
+               of the measurements (optionally also  a folder called `corrs` containing 
+               bin correlations if they have also been published).  There is also a file 
+               called `TAG`, containing a brief description of the measurement 
+               (typically this is just the paper title) and a file called `settings`,
+	            containing the experiment name, collider type and process description, 
+	            e.g. ATLAS,LHC8,ttZ.
 
-To add a new measurement, use the script ./make_datadir in the datasets
+To add a new measurement, use the script `make_datadir` in the datasets
 directory. For consisitency make the measurement directory name the arXiv
-number, e.g. ./make_datadir 1101.1001 --coll TEVT --expt D0 --proc ttbar
+number, e.g.
+`./make_datadir 1101.1001 --coll TEVT --expt D0 --proc ttbar`
 
    * fitting: The various professor scripts used for fitting/limit-setting
 
-   * kfactors: (N)NLO QCD K-factors for the processes of interest, to reweight the
-                   leading order Monte Carlo predictions
+   * kfactors: (N)NLO QCD K-factors for the processes of interest, to reweight the  
+               leading order Monte Carlo predictions
 
-   * models: All (1) of the models that we have to fit so far. Hopefully there will
-     	     be more one day!
+   * models: All (1) of the models that we have to fit so far. Hopefully there will  
+             be more one day!
 
    * processes: Tarballs of the MadEvent directories for all the processes we
      		consider here
@@ -43,25 +44,25 @@ number, e.g. ./make_datadir 1101.1001 --coll TEVT --expt D0 --proc ttbar
 
 ## 3. Getting started
 
-To initialise a new dataset directory, run the script ./topfitter_init, e.g.
+To initialise a new dataset directory, run the script ./topfitter\_init, e.g.
    `./topfitter_init new_measurement_name --proc ttZ --coll LHC8 --dat 1509.05276`
 
 Use the `list-foo` options to see available datasets/processes. This command will
 make a new directory, with the following scripts
 
-     * generate_space.py: Generate the parameter space to sample the points from.
-                          Additional options can be given here, e.g. number of
-                          sample points, number of dimensions, boundaries of the
-                          space, logarithmic or linear sampling.
+* `generate_space.py`: Generate the parameter space to sample the points from.  
+						 Additional options can be given here, e.g. number of
+                     sample points, number of dimensions, boundaries of the
+                     space, logarithmic or linear sampling.
 
-     * run_scan.py: Start generating the samples using MadEvent and plotting the relevant
-       		    histograms. One can choose the number of scan points, the number of 
-		    events per scan point, and whether or not to also plot events 
-		    (default is yes) . You'll need to look into the script yourself
-		     to ensure that the right operators are being given to MadEvent.
-                    Alternatively if you have access to a batch queue, you can use the
-                    script make_batchgrid.py to make a grid of points that can be set
-                    to run in parallel with your own PBS submission script.
+* `run_scan.py`: Start generating the samples using MadEvent and plotting the relevant
+                histograms. One can choose the number of scan points, the number of 
+                events per scan point, and whether or not to also plot events 
+                (default is yes) . You'll need to look into the script yourself to 
+                ensure that the right operators are being given to MadEvent.
+                Alternatively if you have access to a batch queue, you can use the
+                script `make_batchgrid.py` to make a grid of points that can be set
+                to run in parallel with your own PBS submission script.
 
 
 
