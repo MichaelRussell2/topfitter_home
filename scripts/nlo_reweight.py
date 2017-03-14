@@ -14,7 +14,7 @@ import optparse
 op = optparse.OptionParser()
 opts, args = op.parse_args()
 
-indir="results_log"
+indir="results"
 kdir="kfactors"
 outdir="results_reweighted"
 shutil.rmtree(outdir,ignore_errors=True)
@@ -28,18 +28,25 @@ for i in xrange(dsize):
     shutil.copy(os.path.join(indir,"%03d" %i,"used_params"),os.path.join(outdir,"%03d" %i))
 
     for infile in infiles:
-        x_min, x_max, y_lo  = np.loadtxt(infile,usecols=(0,1,2),unpack=True)
+        if np.loadtxt(infile,usecols=None).shape[0] > 2:
+            x_min, x_max, y_lo  = np.loadtxt(infile,usecols=(0,1,2),unpack=True)
 
-        kfile=outfile=infile.split('/')[-1]
-        ks=np.loadtxt(os.path.join(kdir,kfile),usecols=None)
-        ks_nrows, ks_ncols = ks.shape[0], ks.shape[1]
+            kfile=outfile=infile.split('/')[-1]
+            ks=np.loadtxt(os.path.join(kdir,kfile),usecols=None)
+            ks_nrows, ks_ncols = ks.shape[0], ks.shape[1]
 
-#        print i, infile
-        assert len(y_lo) == ks_nrows 
-        if ks_ncols == 3:
-            y_nlo=y_lo*ks[:,1]
-            y_nlo_err=y_nlo*ks[:,2]
-        elif ks_ncols == 4:
-            y_nlo=y_lo*ks[:,2]
-            y_nlo_err=y_nlo*ks[:,3]
-        np.savetxt(os.path.join(outdir,"%03d" %i, outfile),np.c_[x_min,x_max,y_nlo,y_nlo_err], fmt="%.5f")
+            assert len(y_lo) == ks_nrows 
+            if ks_ncols == 3:
+                y_nlo=y_lo*ks[:,1]
+                y_nlo_err=y_nlo*ks[:,2]
+            elif ks_ncols == 4:
+                y_nlo=y_lo*ks[:,2]
+                y_nlo_err=y_nlo*ks[:,3]
+            np.savetxt(os.path.join(outdir,"%03d" %i, outfile),np.c_[x_min,x_max,y_nlo,y_nlo_err], fmt="%.5f")
+        else:
+            y_lo, dy_lo  = np.loadtxt(infile,usecols=(0,1),unpack=True)
+            kfile=outfile=infile.split('/')[-1]
+            ks=np.loadtxt(os.path.join(kdir,kfile),usecols=None)
+            y_nlo=y_lo*ks[0]
+            y_nlo_err=y_nlo*ks[1]
+            np.savetxt(os.path.join(outdir,"%03d" %i, outfile),np.c_[y_nlo,y_nlo_err], fmt="%.5f")
