@@ -9,7 +9,7 @@ import optparse
 op = optparse.OptionParser()
 op.add_option("--ndim", dest="NDIM", type=int, default=6, help="dimensionality of parameter space to generate (default: %default)")
 op.add_option("--npts", dest="NPTS", type=int, default=1000, help="number of sample points to generate (default: %default)")
-op.add_option("--range", dest="BOUNDS", default="1e-1,1e3",help="boundaries of the parameter space (default: %default)")
+op.add_option("--range", dest="BOUNDS", default="1e-3,1e1",help="boundaries of the parameter space (default: %default)")
 op.add_option("--lin", dest="LIN", default=False, action="store_true", help="use linear spacing instead of logarithmic")
 
 ## TODO: Option to plot a 2D slice w/ mpl, to test randomness?

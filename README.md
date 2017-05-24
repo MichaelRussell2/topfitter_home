@@ -51,9 +51,13 @@ Use the `list-foo` options to see available datasets/processes. This command wil
 make a new directory, with the following scripts
 
 * `generate_space.py`: Generate the parameter space to sample the points from.  
-						 Additional options can be given here, e.g. number of
-                     sample points, number of dimensions, boundaries of the
-                     space, logarithmic or linear sampling.
+		       Additional options can be given here, e.g. number of
+                       sample points, number of dimensions, boundaries of the
+                       space, logarithmic or linear sampling.  
+		       NOTE: For the Warsaw basis model, the UFO interprets the
+		       Wilson coefficients as in units of GeV^-2. The conversion from
+		       TeV^-2 is done in the param_card.dat file, but all confidence 
+		       intervals are displayed in units of TeV^-2.
 
 * `run_scan.py`: Start generating the samples using MadEvent and plotting the relevant
                 histograms. One can choose the number of scan points, the number of 
