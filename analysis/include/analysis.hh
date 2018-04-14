@@ -1,8 +1,15 @@
 #ifndef ANALYSIS_HH
 #define ANALYSIS_HH
 
-#include <cmath>
 #include <iostream>
+#include <sstream>
+#include <fstream>
+#include <valarray>
+#include <cmath>
+#include <cassert>
+#include <vector>
+#include <tuple>
+#include <algorithm>
 
 using namespace std;
 namespace FastPartons {
@@ -63,10 +70,19 @@ namespace FastPartons {
     return p1.pT() > p2.pT();
   }
 
-  inline double deltaR(Particle p1, Particle p2){
-    return sqrt(pow(p1.eta()-p2.eta(),2)+pow(p1.phi()-p2.phi(),2));
+  //constrain between [-pi, pi]
+  inline double deltaPhi(Particle p1, Particle p2){
+    double pi = 4*atan(1); 
+    double dPhi = p1.phi()-p2.phi();
+    if (dPhi < pi) dPhi += 2*pi;
+    if (dPhi > pi) dPhi -= 2*pi;
+    return dPhi;
   }
   
+  inline double deltaR(Particle p1, Particle p2){
+    return sqrt(pow(p1.eta()-p2.eta(),2)+pow(deltaPhi(p1,p2),2));
+  }
+
   inline Particle Particle::operator+(const Particle& other) const {
     Particle tmp = *this;
     tmp.Px = this->Px + other.Px;
@@ -74,7 +90,7 @@ namespace FastPartons {
     tmp.Pz = this->Pz + other.Pz;
     tmp.E = this->E + other.E;
     return tmp;   
-}
+  }
   
   inline Particle Particle::operator-(const Particle& other) const {
     Particle tmp = *this;

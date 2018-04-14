@@ -1,15 +1,6 @@
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <valarray>
-#include <cmath>
-#include <cassert>
-#include <vector>
-#include <tuple>
-#include <algorithm>
-#include "analysis.hh" 
-#include "histo.hh"
-#include "lhe_read.hh"
+#include <analysis.hh> 
+#include <histo.hh>
+#include <lhe_read.hh>
 
 using namespace std;
 using namespace FastPartons;
@@ -18,9 +9,12 @@ using namespace FastPartons;
 double sumWeights = 0.;
 
 //book histograms here 
-Histo Histo1(0,2000,50);
-Histo Histo2(0,1000,10);
-Histo Histo3(-2.5,2.5,0.1);
+Histo h_mtt(0,2000,50);
+Histo h_pt(0,1000,10);
+Histo h_yt(-2.5,2.5,0.1);
+
+Histo2d h_mtt_pt(0,2000,50,0,1000,10);
+double wgts;
 
 //simple main function
 int main(int argc, const char** argv){
@@ -30,14 +24,19 @@ int main(int argc, const char** argv){
     return 0;
   }  
   const string infile = argv[1];
-
   read_lhe(infile); 
 
-  //write out histograms to file 
-  Histo1.write("mtt.dat");
-  Histo2.write("pt.dat");
-  Histo3.write("yt.dat"); 
+  //write out histograms to file
+  h_pt.addOverflow();
+  
+  h_mtt.write("mtt.dat");
+
+  h_pt.sumw2();
+  h_pt.write("pt.dat");
+  h_yt.write("yt.dat");
+  h_mtt_pt.write("mtt_pt.dat");
   cout << "Total cross-sec : " << sumWeights << " pb " << endl;
+  cout << wgts << endl;
   return 0;
 }
 
@@ -70,8 +69,11 @@ void analyse_event(vector<FastPartons::LheEntry> Event, double weight) {
     pt  = t.pT();
     yt  = t.y();
   }
-  Histo1.fill(mtt,weight);
-  Histo2.fill(pt,weight);
-  Histo3.fill(yt,weight);
+
+  h_mtt.fill(mtt,weight);
+  h_pt.fill(pt,weight);
+  h_yt.fill(yt,weight);
+
+  h_mtt_pt.fill(mtt,pt,weight);
   return; 
 }
